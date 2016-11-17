@@ -33,6 +33,9 @@ class CustomLineupView(FormView):
         contest = ContestManager.contests()[int(contest_id)]
         date = contest.date()
 
+        class Foo(object):
+            pass
+
         game_logs = []
         for player in players:
             try:
@@ -40,7 +43,13 @@ class CustomLineupView(FormView):
                 ps.expected_points = player.estimated_points(date=date)
                 game_logs.append(ps)
             except:
-                pass
+                ps = Foo()
+                ps.expected_points = player.estimated_points(date=date)
+                ps.player = player
+                ps.draft_king_points = 0
+                ps.minutes = 0
+                game_logs.append(ps)
+                # pass
         return render(
             self.request,
             self.template_name,
