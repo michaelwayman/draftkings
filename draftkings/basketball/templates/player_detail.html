@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+
+{% block css %}
+    <style>
+        #chart svg {
+            height: 300px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+
+        <h1>
+            {{ object.name }}
+        </h1>
+
+        <form class="form-inline" action="">
+            <div class="form-group">
+                <label for="id_season">Season</label>
+                {{ filters.season }}
+            </div>
+        </form>
+
+        <div id="chart">
+            <svg></svg>
+        </div>
+
+        <div class="well well-lg">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h3>Player</h3>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            Team:
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{% url 'team' object.current_team.pk %}">{{ object.current_team }}</a>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            Age:
+                        </div>
+                        <div class="col-md-6">
+                            {{ object.age }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            Height:
+                        </div>
+                        <div class="col-md-6">
+                            {{ object.height }} cm
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            Weight:
+                        </div>
+                        <div class="col-md-6">
+                            {{ object.weight }} kg
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h3>Averages</h3>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            points:
+                        </div>
+                        <div class="col-md-6">
+                            {{ average_points }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            minutes:
+                        </div>
+                        <div class="col-md-6">
+                            {{ average_playtime }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            points/minute:
+                        </div>
+                        <div class="col-md-6">
+                            {{ average_pts_per_min }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <table class="table table-striped" style="font-size: .8em;">
+            <thead>
+            <tr>
+                <th>Date</th>
+                <th>Game</th>
+                <th>Twos</th>
+                <th>Threes</th>
+                <th>Free Throws</th>
+                <th>Assists</th>
+                <th>Turnovers</th>
+                <th>Steals</th>
+                <th>Playtime</th>
+                <th>DK Points</th>
+                <th>Points/Min</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for gl in game_logs %}
+                <tr>
+                    <td>{{ gl.game.date|date:"SHORT_DATE_FORMAT" }}</td>
+                    <td>
+                        <a href="{% url 'game' gl.game.pk %}">{{ gl.game.home_team.abbreviation }}
+                            v {{ gl.game.away_team.abbreviation }}</a>
+                    </td>
+                    <td>{{ gl.twos }}</td>
+                    <td>{{ gl.threes }}</td>
+                    <td>{{ gl.free_throws }}</td>
+                    <td>{{ gl.assists }}</td>
+                    <td>{{ gl.turnovers }}</td>
+                    <td>{{ gl.steals }}</td>
+                    <td>{{ gl.minutes }}</td>
+                    <td>{{ gl.draft_king_points }}</td>
+                    <td>{{ gl.points_per_min }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+
+        $('.table').DataTable({
+            "paging": false,
+            "bFilter": false
+        });
+
+        $("#id_season").change(function (e) {
+            $(this).closest("form").submit();
+        });
+
+        function pWrap(value) {
+            return '<p>' + value + '</p>';
+        }
+
+        var data = {{ data|safe }};
+
+        nv.addGraph(function () {
+            var chart = nv.models.lineChart().useInteractiveGuideline(true);
+
+            chart.interactiveLayer.tooltip.contentGenerator(function (data) {
+                var tt = '';
+                tt += pWrap('game ' + data.series[0].data.x);
+                tt += pWrap(data.series[0].data.game);
+
+                for (var i = 0; i < data.series.length; i++) {
+                    if (data.series[i].key == 'points') {
+                        tt += pWrap('  points - ' + data.series[i].data.y);
+                    }
+                    else if (data.series[i].key == 'playtime') {
+                        tt += pWrap('  play time - ' + data.series[i].data.y);
+                    }
+                }
+                return tt;
+            });
+            chart.xAxis
+                    .axisLabel('Game')
+                    .tickFormat(d3.format(',r'));
+            chart.yAxis
+                    .axisLabel('DraftKing Points')
+                    .tickFormat(d3.format('.02f'));
+            d3.select('#chart svg')
+                    .datum(data)
+                    .transition().duration(500)
+                    .call(chart);
+            nv.utils.windowResize(chart.update);
+            return chart;
+        });
+    </script>
+{% endblock %}

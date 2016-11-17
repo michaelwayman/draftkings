@@ -1,0 +1,44 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Basketball</title>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'bower_components/bootstrap/dist/css/bootstrap.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}"/>
+
+    {#graphing#}
+    <link rel="stylesheet" type="text/css" href="{% static 'bower_components/nvd3/build/nv.d3.min.css' %}"/>
+
+    <style>
+    </style>
+
+    {% block css %}
+    {% endblock %}
+</head>
+<body>
+
+{% block nav %}
+    {% include 'nav.html' %}
+{% endblock %}
+
+{% block content %}
+{% endblock %}
+
+<script type="text/javascript" src="{% static 'bower_components/jquery/dist/jquery.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/tether/dist/js/tether.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/bootstrap/dist/js/bootstrap.min.js' %}"></script>
+
+<script type="text/javascript" src="{% static 'bower_components/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+
+{#graphing#}
+<script type="text/javascript" src="{% static 'bower_components/d3/d3.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'bower_components/nvd3/build/nv.d3.min.js' %}"></script>
+
+{% block scripts %}
+{% endblock %}
+
+</body>
+</html>

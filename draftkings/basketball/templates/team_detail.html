@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% load dk_tags %}
+
+{% block css %}
+    <style>
+        #chart svg {
+            height: 300px;
+        }
+
+        .ta-right {
+            text-align: right;
+        }
+        .ta-center {
+            text-align: center;
+        }
+
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+
+        <h1>
+            {{ object.name }}
+        </h1>
+
+        <form class="form-inline" action="">
+            <div class="form-group">
+                <label for="id_season">Season</label>
+                {{ filters.season }}
+            </div>
+        </form>
+
+        <div id="chart">
+            <svg></svg>
+        </div>
+
+        <div class="well well-lg">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="row">
+                        <div class="col-md-12 ta-center">
+                            <h3>Averages</h3>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 ta-right">
+                            points
+                        </div>
+                        <div class="col-md-6">
+                            {{ average_points }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 ta-right">
+                            minutes
+                        </div>
+                        <div class="col-md-6">
+                            {{ average_playtime }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 ta-right">
+                            pts/min
+                        </div>
+                        <div class="col-md-6">
+                            {{ average_pts_per_min }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <table class="table table-striped" style="font-size: .8em;">
+            <thead>
+            <tr>
+                <th>Player</th>
+                <th>Position</th>
+                <th>Average Playtime</th>
+                <th>Games</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for player in players %}
+                <tr>
+                    <td><a href="{% url 'player' player.pk %}">{{ player.name }}</a></td>
+                    <td>{{ player.position }}</td>
+                    <td>{% avg_mins_for_season player season %}</td>
+                    <td>{% game_count_for_season player season %}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+
+        $('.table').DataTable({
+            "paging": false,
+            "bFilter": false
+        });
+
+        $("#id_season").change(function (e) {
+            $(this).closest("form").submit();
+        });
+
+        function pWrap(value) {
+            return '<p>' + value + '</p>';
+        }
+
+        var data = {{ data|safe }};
+
+        nv.addGraph(function () {
+            var chart = nv.models.lineChart().useInteractiveGuideline(true);
+
+            chart.interactiveLayer.tooltip.contentGenerator(function (data) {
+                var tt = '';
+                tt += pWrap('game ' + data.series[0].data.x);
+                tt += pWrap(data.series[0].data.game);
+
+                for (var i = 0; i < data.series.length; i++) {
+                    if (data.series[i].key == 'points') {
+                        tt += pWrap('  points - ' + data.series[i].data.y);
+                    }
+                    else if (data.series[i].key == 'playtime') {
+                        tt += pWrap('  play time - ' + data.series[i].data.y);
+                    }
+                    else if (data.series[i].key == 'ELO') {
+                        tt += pWrap('  ELO - ' + data.series[i].data.y);
+                    }
+                }
+                return tt;
+            });
+            chart.xAxis
+                    .axisLabel('Game')
+                    .tickFormat(d3.format(',r'));
+            chart.yAxis
+                    .axisLabel('DraftKing Points')
+                    .tickFormat(d3.format('.02f'));
+{#            chart.yDomain([1100,1900]);#}
+            d3.select('#chart svg')
+                    .datum(data)
+                    .transition().duration(500)
+                    .call(chart);
+            nv.utils.windowResize(chart.update);
+            return chart;
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container">
+        <h1>
+            Player List
+        </h1>
+        <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Team</th>
+                <th>Name</th>
+                <th>Position</th>
+                <th>Games</th>
+            </tr>
+        </thead>
+            <tbody>
+                {% for player in object_list %}
+                    <tr>
+                        <td><a href="{% url 'team' player.current_team.pk %}">{{ player.current_team }}</a></td>
+                        <td><a href="{% url 'player' player.pk %}">{{ player.name }}</a></td>
+                        <td>{{ player.position }}</td>
+                        <td>{{ player.gamelog_set.count }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+    $(document).ready(function() {
+        $('.table').DataTable({
+            "paging":   false,
+        });
+    });
+    </script>
+{% endblock %}

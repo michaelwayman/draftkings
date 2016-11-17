@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block css %}
+    <style>
+        #chart svg {
+            height: 300px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+
+        <h1>
+            {{ object }}
+        </h1>
+
+        <table class="table table-striped" style="font-size: .8em;">
+            <thead>
+            <tr>
+                <th>Player</th>
+                <th>Team</th>
+                <th>Playtime</th>
+                <th>Avg Playtime</th>
+                <th>DK Points</th>
+                <th>Points/Min</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for stat in stats %}
+                <tr>
+                    <td><a href="{% url 'player' stat.player.pk %}">{{ stat.player.name }}</a></td>
+                    <td><a href="{% url 'team' stat.team.pk %}">{{ stat.team }}</a></td>
+                    <td>{{ stat.minutes }}</td>
+                    <td>{{ stat.player.average_minutes }}</td>
+                    <td>{{ stat.draft_king_points }}</td>
+                    <td>{{ stat.points_per_min }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        $('.table').DataTable({
+            "paging": false,
+            "bFilter": false
+        });
+    </script>
+{% endblock %}

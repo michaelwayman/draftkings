@@ -1,0 +1,7 @@
+.idea
+.DS_Store
+*.pyc
+docs/_build
+docs/source
+
+db.sqlite3

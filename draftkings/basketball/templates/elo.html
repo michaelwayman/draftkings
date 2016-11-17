@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+
+{% block css %}
+<style>
+.elo-form {
+    margin-bottom: 32px;
+}
+h1 {
+    margin-bottom: 32px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+
+        <h1>
+            ELO calc
+        </h1>
+
+        <form class="form-inline elo-form" action="">
+            <div class="row">
+                <div class="col-sm-3">
+                    <label for="id_elo_1">Team 1</label>
+                    {{ form.team_1 }}
+                </div>
+                <div class="col-sm-3">
+                    <label for="id_elo_2">Team 2</label>
+                    {{ form.team_2 }}
+                </div>
+            </div>
+            <h2 style="margin: 32px;">or</h2>
+            <div class="row">
+                <div class="col-sm-3">
+                    <label for="id_elo_1">Team 1 ELO</label>
+                    {{ form.elo_1 }}
+                </div>
+                <div class="col-sm-3">
+                    <label for="id_elo_2">Team 2 ELO</label>
+                    {{ form.elo_2 }}
+                </div>
+            </div>
+
+            <input type="submit">
+        </form>
+
+        <div class="well well-lg">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h3>Summary</h3>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            difference
+                        </div>
+                        <div class="col-md-6">
+                            {{ elo_diff }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            point spread
+                        </div>
+                        <div class="col-md-6">
+                            {{ elo_point_spread }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            win probability
+                        </div>
+                        <div class="col-md-6">
+                            {{ elo_win_prob }}%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}
