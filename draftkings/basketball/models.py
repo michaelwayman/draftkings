@@ -351,9 +351,12 @@ class GameLog(models.Model):
 
 class Contest(models.Model):
     name = models.CharField(max_length=64)
-    entree_fee = models.DecimalField(max_digits=16, decimal_places=2)
+    entry_fee = models.DecimalField(max_digits=16, decimal_places=2)
     entries = models.IntegerField()
     total_entries = models.IntegerField()
+
+    def __str__(self):
+        return str(self.name)
 
 
 class ContestPayout(models.Model):
