@@ -347,3 +347,17 @@ class GameLog(models.Model):
             points += settings.DRAFT_KING_POINTS['double_double']
 
         return points
+
+
+class Contest(models.Model):
+    name = models.CharField(max_length=64)
+    entree_fee = models.DecimalField(max_digits=16, decimal_places=2)
+    entries = models.IntegerField()
+    total_entries = models.IntegerField()
+
+
+class ContestPayout(models.Model):
+    contest = models.ForeignKey('Contest')
+    start = models.IntegerField()
+    stop = models.IntegerField()  # inclusive
+    value = models.DecimalField(max_digits=16, decimal_places=2)
