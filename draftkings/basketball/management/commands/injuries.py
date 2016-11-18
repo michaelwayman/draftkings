@@ -60,4 +60,5 @@ class Command(BaseCommand):
 PLAYER_MAP = {
     'J.R. Smith': 'JR Smith',
     'DeWayne Dedmon': 'Dewayne Dedmon',
+    'J.J. Barea': 'Jose Juan Barea',
 }

@@ -42,6 +42,16 @@ class PlayerDetail(DetailView):
             })
         return point_values
 
+    def get_ppm_graph_data(self, game_logs):
+        point_values = []
+        for i, gl in enumerate(game_logs):
+            point_values.append({
+                'x': i + 1,
+                'y': gl.draft_king_points / float(gl.minutes),
+                'game': str(gl.game)
+            })
+        return point_values
+
     def get_graph_data(self, game_logs):
         data = [
             {
@@ -53,6 +63,11 @@ class PlayerDetail(DetailView):
                 'values': self.get_playtime_graph_data(game_logs),
                 'key': 'playtime',
                 'color': '#cc7ffe',
+            },
+            {
+                'values': self.get_ppm_graph_data(game_logs),
+                'key': 'ppm',
+                'color': '#007ffe',
             },
         ]
         return data

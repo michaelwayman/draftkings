@@ -256,7 +256,7 @@ class Evolve(object):
                     game_log.draft_king_points = 0
                     game_log.minutes = 0
                     game_log.points_per_min = 0
-                game_logs = player.game_logs_last_x_days(90)
+                game_logs = player.game_logs_last_x_days(90, before_date=self.date)
                 table.add_row([
                     position, player.name, player.salary,
                     player.expected_points, game_log.draft_king_points, game_log.minutes,

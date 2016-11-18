@@ -84,10 +84,10 @@ class Game(models.Model):
         return sum(gl.points for gl in game_logs)
 
     def winner(self):
-        if self.home_team_score() > self.away_team_score():
-            return self.home_team
-        else:
-            return self.away_team
+        return self.home_team if self.home_team_score() > self.away_team_score() else self.away_team
+
+    def loser(self):
+        return self.home_team if self.home_team_score() < self.away_team_score() else self.away_team
 
     def home_team_previous_game(self):
         return Game.objects.filter(
@@ -169,14 +169,14 @@ class Player(models.Model):
         today = datetime.today()
         return today.year - self.birthday.year - ((today.month, today.day) < (self.birthday.month, self.birthday.day))
 
-    def game_logs_since_date(self, date, from_date=None):
-        if not from_date:
-            from_date = datetime.now().date()
+    def game_logs_since_date(self, date, before_date=None):
+        if not before_date:
+            before_date = datetime.now().date()
 
         return (
             self.gamelog_set
                 .filter(game__date__gte=date)
-                .filter(game__date__lte=from_date)
+                .filter(game__date__lte=before_date)
                 .order_by('-game__date'))
 
     def game_logs_before_date(self, date):
@@ -185,27 +185,20 @@ class Player(models.Model):
                 .filter(game__date__lte=date)
                 .order_by('-game__date'))
 
-    def game_logs_last_x_days(self, x, from_date=None):
-        if not from_date:
-            from_date = datetime.now().date()
-        return self.game_logs_since_date(from_date - timedelta(days=x), from_date=from_date)
+    def game_logs_last_x_days(self, x, before_date=None):
+        if before_date is None:
+            before_date = datetime.now().date()
+        return self.game_logs_since_date(before_date - timedelta(days=x), before_date=before_date)
 
-    def game_logs_last_x_games(self, x, from_date=None):
-        if not from_date:
-            from_date = datetime.now().date()
-        return self.gamelog_set.filter(game__date__lte=from_date).order_by('-game__date')[:x]
+    def game_logs_last_x_games(self, x, before_date=None):
+        if before_date is None:
+            before_date = datetime.now().date()
+        return self.gamelog_set.filter(game__date__lte=before_date).order_by('-game__date')[:x]
 
     def game_logs_against_team(self, team):
-        if isinstance(team, six.string_types):
-            if len(team) <= 3:
-                q = Q(game__away_team__short=team) | Q(game__home_team__short=team)
-            else:
-                q = Q(game__away_team__name=team) | Q(game__home_team__name=team)
-        elif isinstance(team, Team):
-            q = Q(game__away_team=team) | Q(game__home_team=team)
-        else:
-            q = Q(game__away_team__pk=team) | Q(game__home_team__pk=team)
-        return self.gamelog_set.filter(q)
+        return self.gamelog_set.filter(
+            Q(game__away_team=team) |
+            Q(game__home_team=team))
 
     def average_points(self, game_logs=None):
         game_logs = game_logs or self.gamelog_set.all()
@@ -238,11 +231,19 @@ class Player(models.Model):
     def estimated_points(self, opponent=None, date=None, salary=None):
         if date is None:
             date = datetime.now()
-        game_logs_1 = self.game_logs_last_x_days(4, from_date=date - timedelta(days=1))
-        game_logs_2 = self.game_logs_last_x_days(35, from_date=date - timedelta(days=1))
-        game_logs_3 = self.game_logs_last_x_days(300, from_date=date - timedelta(days=1))
+        game_logs_1 = self.game_logs_last_x_days(5, before_date=date - timedelta(days=1))
+        game_logs_2 = self.game_logs_last_x_days(35, before_date=date - timedelta(days=1))
+        game_logs_3 = self.game_logs_last_x_days(300, before_date=date - timedelta(days=1))
 
-        return self.average_points(game_logs=game_logs_1) * 0.2 + self.average_points(game_logs=game_logs_2) * 0.4 + self.average_points(game_logs=game_logs_3) * 0.4
+        foo = self.game_logs_last_x_days(90, before_date=date - timedelta(days=1))
+
+        if self.average_minutes(game_logs=foo) < 23:
+            return 0
+
+        if self.average_ppm(game_logs=foo) < 0.9:
+            return 0
+
+        return self.average_points(game_logs=game_logs_1) * 0.3 + self.average_points(game_logs=game_logs_2) * 0.3 + self.average_points(game_logs=game_logs_3) * 0.4
 
 
 class GameLog(models.Model):
