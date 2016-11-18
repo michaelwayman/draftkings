@@ -1,8 +1,7 @@
 {% load humanize %}
 
 <div class="row">
-    <div class="col-md-7"><h3>${{ object.entry_fee }}</h3></div>
-    <div class="col-md-5" style="text-align: right;"><h3>{{ object.entries }} / {{ object.total_entries }}</h3></div>
+    <div class="col-md-7"><h3 class="money">${{ object.entry_fee }}</h3><h4>{{ object.entries }} / {{ object.total_entries }}</h4></div>
 </div>
 
 <div style="text-align: center;">
