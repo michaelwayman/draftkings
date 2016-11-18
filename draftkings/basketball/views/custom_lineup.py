@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.views.generic.edit import FormView
 from basketball.utils.contests import CSVManager as ContestManager
 
-from basketball.models import Player
+from basketball.models import Player, GameLog
 
 
 class LineupForm(forms.Form):
@@ -39,8 +39,13 @@ class CustomLineupView(FormView):
                 ps = player.gamelog_set.get(game__date=date)
                 ps.expected_points = player.estimated_points(date=date)
                 game_logs.append(ps)
-            except:
-                pass
+            except GameLog.DoesNotExist:
+                ps = Foo()
+                ps.expected_points = player.estimated_points(date=date)
+                ps.player = player
+                ps.draft_king_points = 0
+                ps.minutes = 0
+                game_logs.append(ps)
         return render(
             self.request,
             self.template_name,
@@ -53,3 +58,7 @@ class CustomLineupView(FormView):
                 total_playtime_avg=sum(stat.player.average_minutes(stat.player.game_logs_before_date(date)) for stat in game_logs),
             )
         )
+
+
+class Foo(object):
+    pass

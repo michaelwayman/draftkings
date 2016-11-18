@@ -238,10 +238,12 @@ class Player(models.Model):
     def estimated_points(self, opponent=None, date=None, salary=None):
         if date is None:
             date = datetime.now()
-        game_logs_1 = self.game_logs_last_x_days(90, from_date=date - timedelta(days=1))
-        game_logs_2 = self.game_logs_last_x_days(1, from_date=date - timedelta(days=1))
+        game_logs_1 = self.game_logs_last_x_days(365, from_date=date - timedelta(days=1))
+        game_logs_2 = self.game_logs_last_x_days(90, from_date=date - timedelta(days=1))
+        game_logs_3 = self.game_logs_last_x_days(5, from_date=date - timedelta(days=1))
 
-        return self.average_points(game_logs=game_logs_1) * 0.75 + self.average_points(game_logs=game_logs_1) * 0.25
+        return (self.average_points(game_logs=game_logs_1) * 0.5 + self.average_points(game_logs=game_logs_2) * 0.3 +
+                self.average_points(game_logs=game_logs_3) * 0.2)
 
 
 class GameLog(models.Model):
