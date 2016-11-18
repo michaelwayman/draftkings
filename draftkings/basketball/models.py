@@ -349,3 +349,39 @@ class GameLog(models.Model):
             points += settings.DRAFT_KING_POINTS['double_double']
 
         return points
+
+
+class Contest(models.Model):
+    dk_id = models.IntegerField(unique=True)
+    name = models.CharField(max_length=64)
+    entry_fee = models.DecimalField(max_digits=16, decimal_places=2)
+    mult_entries_allowed = models.IntegerField()
+    total_entries = models.IntegerField()
+    prize_pool = models.DecimalField(max_digits=16, decimal_places=2)
+
+    def __str__(self):
+        return str(self.dk_id)
+
+
+class ContestPayout(models.Model):
+    contest = models.ForeignKey('Contest')
+    start = models.IntegerField()
+    stop = models.IntegerField()  # inclusive
+    value = models.DecimalField(max_digits=16, decimal_places=2)
+
+
+class Opponent(models.Model):
+    user_name = models.CharField(max_length=30)
+
+    @property
+    def average_score(self):
+        games = OpponentLineup.objects.filter(id=self.id)
+        return sum([game.score for game in games]) / len(games) if games else 0.0
+
+
+class OpponentLineup(models.Model):
+    opponent = models.ForeignKey('Opponent')
+    contest = models.ForeignKey('Contest')
+    players = models.ManyToManyField('Player')
+    score = models.DecimalField(decimal_places=4, max_digits=8)
+

@@ -1,9 +1,16 @@
 import logging as log
+import simplejson as json
+import re
+
+from os import listdir
+from os.path import isfile, join
 
 from django.core.management.base import BaseCommand
+from simplejson.scanner import JSONDecodeError
 from texttable import Texttable
 
-from basketball.models import Player, GameLog
+from basketball.constants import CONTEST_BATCH_DIR
+from basketball.models import Player, GameLog, Opponent, OpponentLineup, Contest
 from basketball.utils.contests import CSVManager as ContestManager
 
 
@@ -29,6 +36,11 @@ class Command(BaseCommand):
             '-A', '--apply-all',
             action='store_true',
             help='Saves each contests salary to the database.')
+        parser.add_argument(
+            '-O', '--something',
+            action='store_true',
+            help='Reads in contest data'
+        )
 
     def handle(self, *args, **options):
 
@@ -48,6 +60,45 @@ class Command(BaseCommand):
         if options.get('apply_all'):
             for contest in ContestManager.contests():
                 _apply_contest_information(contest)
+
+        if options.get('something'):
+            files = [f for f in listdir(CONTEST_BATCH_DIR) if isfile(join(CONTEST_BATCH_DIR, f))]
+            for file in files:
+                if re.match('(\d{2}-\d{2}-\d{4}\.json)', file):
+                    load_contest_data_by_day(file)
+
+
+def load_contest_data_by_day(file_name):
+    with open(join(CONTEST_BATCH_DIR, file_name)) as content:
+        try:
+            contest_dict = json.load(content)
+        except JSONDecodeError:
+            log.warning(
+                'Trouble decoding json file {file_name}'.format(
+                    file_name=file_name))
+            return
+        contest_dicts = contest_dict['Contests']
+        contests = [save_contest_data(contest) for contest in contest_dicts]
+
+
+def save_contest_data(contest_dict):
+    try:
+        dk_id = contest_dict['id']
+        name = contest_dict['n']
+        entry_fee = contest_dict['a']
+        entries_allowed = contest_dict['mec']
+        total_entries = contest_dict['m']
+        prize_pool = contest_dict['po']
+    except KeyError:
+        log.warning('Trouble extracting data from contest json {json}'.format(
+            json=contest_dict
+        ))
+        return
+
+    contest, created = Contest.objects.update_or_create(dk_id=dk_id, name=name, entry_fee=entry_fee,
+                                                        mult_entries_allowed=entries_allowed,
+                                                        total_entries=total_entries, prize_pool=prize_pool)
+    return contest
 
 
 def _apply_contest_information(contest):
