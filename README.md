@@ -8,7 +8,7 @@ make build_docs
 
 # Contributing
 
-Feel free, BUT:
+Feel free, *but*:
 
 ### Branching
 
@@ -17,6 +17,10 @@ Feel free, BUT:
  - If you're working on a feature then "feature/feature_name"
  - If you are working on a defect, then "defect/defect_name"
  - If you are working on multiple defects at once and only want to make a single PR then "defect/champions"
+
+### PRs
+ - Rebase your commits to something neat.
+ - Try to reference the issue in your commit e.g. "closes #15"
 
 # DraftKing Info
 
