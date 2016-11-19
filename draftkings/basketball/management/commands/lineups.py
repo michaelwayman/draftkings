@@ -1,9 +1,8 @@
 from django.core.management.base import BaseCommand
 
-from basketball.utils.contests import CSVManager as ContestManager
+from basketball.utils.dk_tools.salaries import SalaryFileManager
 from basketball.utils.evolution import Evolve
 from basketball.models import Player
-from django.core.management import call_command
 
 
 class Command(BaseCommand):
@@ -11,26 +10,19 @@ class Command(BaseCommand):
     help = ''
 
     def add_arguments(self, parser):
+
         parser.add_argument(
-            '-l', '--list',
-            action='store_true',
-            help='List the contest CSV files.')
-        parser.add_argument(
-            '-c', '--contest',
+            '-s', '--salary',
             action='store',
             type=int,
-            help='Generate lineups for the specified contest.')
+            help='Generate lineups using the specified salary file.')
 
     def handle(self, *args, **options):
 
-        if options.get('list'):
-            call_command('contests', '-l')
-            return
-
-        if options.get('contest'):
-            contest = ContestManager.contests()[options.get('contest') - 1]
-            date = contest.date()
-            contest_players = contest.players()
+        if options.get('salary'):
+            salary_file = SalaryFileManager.salary_files()[options.get('salary')]
+            date = salary_file.date()
+            contest_players = salary_file.player_salaries()
             players = Player.objects.filter(
                 name__in=[cp.name for cp in contest_players]).exclude(name__in=INJURED_PLAYERS)
 
@@ -87,5 +79,4 @@ class Command(BaseCommand):
             print(evolve)
 
 
-INJURED_PLAYERS = set([u'Tyreke Evans', u'Mike Scott', u'Wayne Ellington', u'Anthony Davis', u'Dwight Howard', u'Lance Thomas', u'Devin Harris', u'Jodie Meeks', u'Tony Allen', u'Nick Young', u'Bradley Beal', u'Justise Winslow', u'Alec Burks', u'Ben Simmons', u'Draymond Green', u'Nikola Pekovic', u'Nerlens Noel', u'Khris Middleton', u'Deron Williams', u'Festus Ezeli', u'Jeremy Lin', u'Brice Johnson', u'Mo Williams', u'Tiago Splitter', u'Rodney Stuckey', 'JR Smith', u'Chris Bosh', u'Brandon Rush', u'Damian Jones', u'Goran Dragic', u'Reggie Jackson', u'Delon Wright', u'Derrick Favors', u'Rajon Rondo', u'George Hill', u'Jae Crowder', u'Ian Mahinmi', u'Jared Sullinger', u'Alexis Ajinca', u'Darrell Arthur', u'Jeremy Lamb', u'Caris LeVert', u'Gary Harris', u'Thabo Sefolosha', u'Will Barton', u'Shabazz Muhammad', u'Cameron Payne', u'Brandan Wright', u'Doug McDermott', u'Quincy Pondexter', u'Dirk Nowitzki', u'Wesley Johnson', u'Michael Carter-Williams', 'Dewayne Dedmon', u'Al-Farouq Aminu', u'Al Horford', u'Wilson Chandler', u'Jerryd Bayless'])
-
+INJURED_PLAYERS = set()
