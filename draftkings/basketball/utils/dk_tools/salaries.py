@@ -9,6 +9,8 @@ from datetime import datetime
 
 from django.conf import settings
 
+from basketball.constants import PLAYER_MAP, TEAM_MAP
+
 SALARIES_FOLDER = os.path.join(settings.BASE_DIR,  'basketball', 'fixtures', 'dk_salaries')
 
 
@@ -84,7 +86,7 @@ class SalaryFileManager(object):
                 # Make the PlayerSalary
                 player = PlayerSalary()
                 player.position = row['Position']
-                player.name = PLAYER_NAME_MAP.get(row['Name'], row['Name'])
+                player.name = PLAYER_MAP.get(row['Name'], row['Name'])
                 player.salary = int(row['Salary'])
                 # Figure out the opponent
                 if teams_playing[0] == current_players_team:
@@ -112,42 +114,3 @@ class SalaryFileDialect(csv.Dialect):
     skipinitialspace = True
     lineterminator = '\r\n'
     quoting = csv.QUOTE_MINIMAL
-
-
-# Map CSV file team abbreviations to names used in the database
-TEAM_MAP = {
-    'NY': 'NYK',
-    'NO': 'NOP',
-    'PHO': 'PHX',
-    'SA': 'SAS',
-}
-
-# Map CSV file player name's to names used in the database
-PLAYER_NAME_MAP = {
-    'C.J. McCollum': 'CJ McCollum',
-    'J.J. Redick': 'JJ Redick',
-    'J.J. Barea': 'Jose Juan Barea',
-    'C.J. Watson': 'CJ Watson',
-    'T.J. McConnell': 'TJ McConnell',
-    'Louis Amundson': 'Lou Amundson',
-    'Luc Richard Mbah a Moute': 'Luc Mbah a Moute',
-    'C.J. Wilcox': 'CJ Wilcox',
-    'R.J. Hunter': 'RJ Hunter',
-    'J.J. Hickson': 'JJ Hickson',
-    'P.J. Hairston': 'PJ Hairston',
-    'T.J. Warren': 'TJ Warren',
-    'P.J. Tucker': 'PJ Tucker',
-    'Kelly Oubre Jr.': 'Kelly Oubre',
-    'K.J. McDaniels': 'KJ McDaniels',
-    'C.J. Miles': 'CJ Miles',
-    'Glenn Robinson III': 'Glenn Robinson',
-    'Jakarr Sampson': 'JaKarr Sampson',
-    'Nene Hilario': 'Nene',
-    'Timothe Luwawu-Cabarrot': 'Timothe Luwawu',
-    'Wade Baldwin IV': 'Wade Baldwin',
-    'A.J. Hammons': 'AJ Hammons',
-    'Guillermo Hernangomez': 'Willy Hernangomez',
-    'Stephen Zimmerman Jr.': 'Stephen Zimmerman',
-    'DeAndre\' Bembry': 'DeAndre Bembry',
-    'J.R. Smith': 'JR Smith',
-}
