@@ -25,8 +25,21 @@ class TeamAdmin(admin.ModelAdmin):
     ordering = ('name', )
 
 
+class ContestAdmin(admin.ModelAdmin):
+    list_display = ('name', 'entry_fee', 'entries', 'total_entries')
+
+
+class ContestPayoutAdmin(admin.ModelAdmin):
+    list_display = ('contest', 'start', 'stop', 'value')
+
+
 admin.site.register(Player, PlayerAdmin)
 admin.site.register(GameLog, GameLogAdmin)
 admin.site.register(Game, GameAdmin)
 admin.site.register(Team, TeamAdmin)
 admin.site.register((Season, ))
+admin.site.register(Contest)
+admin.site.register(ContestPayout)
+admin.site.register(Opponent)
+admin.site.register(OpponentLineup)
+

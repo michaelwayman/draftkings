@@ -52,7 +52,7 @@ class Command(BaseCommand):
                 Player.objects.get(name=injury.player)
                 injured_players.add(injury.player)
             except Player.DoesNotExist:
-                print('Connot find player with name "{}"'.format(injury.player))
+                print('Cannot find player with name "{}"'.format(injury.player))
 
         print(injured_players)
 
@@ -60,4 +60,6 @@ class Command(BaseCommand):
 PLAYER_MAP = {
     'J.R. Smith': 'JR Smith',
     'DeWayne Dedmon': 'Dewayne Dedmon',
+    'J.J. Barea': 'Jose Juan Barea',
+    ' Nene': 'Nene',
 }

@@ -25,6 +25,8 @@ from basketball.views import (
     GameDetail,
     ELOView,
     CustomLineupView,
+    ContestListView,
+    ContestDetailView,
 )
 
 urlpatterns = [
@@ -37,4 +39,6 @@ urlpatterns = [
     url(r'^games/(?P<pk>[0-9]+)/', GameDetail.as_view(), name='game'),
     url(r'^tools/elo/', ELOView.as_view(), name='elo'),
     url(r'^tools/custom-lineup/', CustomLineupView.as_view(), name='custom_lineup'),
+    url(r'^contests/', ContestListView.as_view(), name='contests'),
+    url(r'^contest/(?P<pk>[0-9]+)/', ContestDetailView.as_view(), name='contest'),
 ]
