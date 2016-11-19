@@ -42,7 +42,7 @@ class Command(BaseCommand):
             print(table.draw())
 
         if options.get('save'):
-            salary = SalaryFileManager.salary_files()[options.get('apply')]
+            salary = SalaryFileManager.salary_files()[options.get('save')]
             salary.save_to_db()
 
         if options.get('save_all'):

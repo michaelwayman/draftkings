@@ -13,7 +13,7 @@ from django.conf import settings
 from basketball.constants import PLAYER_MAP, TEAM_MAP
 from basketball.models import Player, GameLog
 
-SALARIES_FOLDER = os.path.join(settings.BASE_DIR,  'basketball', 'fixtures', 'dk_salaries')
+SALARIES_FOLDER = os.path.join(settings.BASE_DIR,  'basketball', 'fixtures', 'salaries')
 
 
 class PlayerSalary(object):

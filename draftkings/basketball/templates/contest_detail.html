@@ -1,8 +1,8 @@
 {% load humanize %}
 
 <div class="row">
-    <div class="col-md-7"><h3>${{ object.entry_fee }}</h3></div>
-    <div class="col-md-5" style="text-align: right;"><h3>{{ object.entries }} / {{ object.total_entries }}</h3></div>
+    <div class="col-md-7"><h3>{% if payout.value < 0.1 %}FREE{% else %}${{ object.entry_fee }}{% endif %}</h3></div>
+    <div class="col-md-5" style="text-align: right;"><h3>{{ object.mult_entries_allowed }} / {{ object.total_entries }}</h3></div>
 </div>
 
 <div style="text-align: center;">
