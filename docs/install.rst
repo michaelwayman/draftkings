@@ -10,7 +10,7 @@ To install this project and populate the database for testing:
     mkvirtualenv draftkings
 
     # Install the requirements (only python stuff for now)
-    pip install -r pip_requires.txt
+    pip install -r requires.txt
 
     # Run database migrations
     python draftkings/manage.py migrate
