@@ -7,13 +7,14 @@ import os
 import re
 from datetime import datetime
 
+from django.conf import settings
 
-CONTEST_FOLDER = os.path.join(os.path.dirname(__file__), '..', 'fixtures', 'dk_salaries')
+SALARIES_FOLDER = os.path.join(settings.BASE_DIR,  'basketball', 'fixtures', 'dk_salaries')
 
 
-class ContestPlayer(object):
+class PlayerSalary(object):
     """
-    Represents am NBA player from the csv contest file provided by DraftKings.
+    Represents am NBA player from the csv salary file provided by DraftKings.
     """
     def __init__(self):
         self.position = ''
@@ -22,10 +23,10 @@ class ContestPlayer(object):
         self.opponent = ''
 
 
-class Contest(object):
-    """Class that represents a draftkings contest as provided by a CSV file.
+class SalaryFile(object):
+    """Class that represents a draftking salary file.
 
-    Provides a way to easily retrieve information from a particular contest file.
+    Provides a way to easily retrieve information from a particular salary file.
     """
 
     def __init__(self, file_name):
@@ -36,41 +37,43 @@ class Contest(object):
         assert re.match('(\d{2}-\d{2}-\d{4}\.csv)', file_name) is not None
         self.file_name = file_name
 
-    def full_path(self):
+    def _full_path(self):
         """Full path to the file *relative* to this folder lol"""
-        return os.path.join(CONTEST_FOLDER, self.file_name)
+        return os.path.join(SALARIES_FOLDER, self.file_name)
 
     def date(self):
         """converts the CSV file's name into a date object"""
         return datetime.strptime(self.file_name, '%m-%d-%Y.csv')
 
-    def players(self):
-        """Returns a list of `ContestPlayer`s from the contest"""
-        return CSVManager.contest_player_info(path=self.full_path())
+    def player_salaries(self):
+        """Returns a list of `PlayerSalary`s from the contest"""
+        return SalaryFileManager.salary_file_info(path=self._full_path())
 
     def __str__(self):
         return self.file_name
 
 
-class CSVManager(object):
+class SalaryFileManager(object):
 
     @classmethod
-    def contests(cls):
+    def salary_files(cls):
         file_names = filter(
             lambda k: re.match('(\d{2}-\d{2}-\d{4}\.csv)', k),
-            os.listdir(CONTEST_FOLDER))
+            os.listdir(SALARIES_FOLDER))
         file_names.sort()
-        return [Contest(name) for name in file_names]
+        return [SalaryFile(name) for name in file_names]
 
     @classmethod
-    def contest_player_info(cls, file_obj=None, path=None):
+    def salary_file_info(cls, file_obj=None, path=None):
         """
-        Given a draft king contest csv file return a list of ContestPlayer objects
+        Given a draft king contest csv file return a list of PlayerSalary
         """
+        if file_obj is None and path is None:
+            raise ValueError('You must supply either a file object or a path to a file.')
 
-        def _get_player_info(file_obj):
-            """Returns a list of `ContestPlayer`s from the contest CSV file."""
-            reader = csv.DictReader(file_obj, dialect=DKDialect)
+        def _get_info(file_obj):
+            """Returns a list of `SalaryObject`s from the contest CSV file."""
+            reader = csv.DictReader(file_obj, dialect=SalaryFileDialect)
             all_players = []
             for row in reader:
                 # Figure out the teams
@@ -78,8 +81,8 @@ class CSVManager(object):
                 teams_playing = [TEAM_MAP.get(t, t) for t in teams_playing]
                 current_players_team = row['teamAbbrev'].upper()
 
-                # Make the ContestPlayer
-                player = ContestPlayer()
+                # Make the PlayerSalary
+                player = PlayerSalary()
                 player.position = row['Position']
                 player.name = PLAYER_NAME_MAP.get(row['Name'], row['Name'])
                 player.salary = int(row['Salary'])
@@ -96,14 +99,12 @@ class CSVManager(object):
         # Figure out whether we were passed a file or a path to a file.
         if path:
             with open(path) as f:
-                return _get_player_info(f)
+                return _get_info(f)
         elif file_obj:
-            return _get_player_info(file_obj)
-        else:
-            raise ValueError('You must supply either a file object or a path to a file.')
+            return _get_info(file_obj)
 
 
-class DKDialect(csv.Dialect):
+class SalaryFileDialect(csv.Dialect):
     """The "Dialect" that the draftking contest CSV files use."""
     delimiter = ','
     quotechar = '"'

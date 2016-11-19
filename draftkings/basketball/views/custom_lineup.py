@@ -1,14 +1,14 @@
 from django import forms
 from django.shortcuts import render
 from django.views.generic.edit import FormView
-from basketball.utils.contests import CSVManager as ContestManager
+from basketball.utils.dk_tools.salaries import SalaryFileManager
 
 from basketball.models import Player
 
 
 class LineupForm(forms.Form):
     lineup = forms.CharField(widget=forms.Textarea, required=False)
-    contest = forms.ChoiceField(choices=enumerate(ContestManager.contests()))
+    contest = forms.ChoiceField(choices=enumerate(SalaryFileManager.salary_files()))
 
 
 class CustomLineupView(FormView):
@@ -30,7 +30,7 @@ class CustomLineupView(FormView):
         contest_id = form.cleaned_data['contest']
 
         players = self.players_from_lineup(lineup)
-        contest = ContestManager.contests()[int(contest_id)]
+        contest = SalaryFileManager.salary_files()[int(contest_id)]
         date = contest.date()
 
         game_logs = []

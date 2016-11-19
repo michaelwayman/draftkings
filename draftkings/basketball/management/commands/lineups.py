@@ -1,7 +1,7 @@
 from datetime import timedelta
 from django.core.management.base import BaseCommand
 
-from basketball.utils.contests import CSVManager as ContestManager
+from basketball.utils.dk_tools.salaries import SalaryFileManager
 from basketball.utils.evolution import Evolve
 from basketball.models import Player
 from django.core.management import call_command
@@ -29,9 +29,9 @@ class Command(BaseCommand):
             return
 
         if options.get('contest'):
-            contest = ContestManager.contests()[options.get('contest') - 1]
-            date = contest.date()
-            contest_players = contest.players()
+            salary_file = SalaryFileManager.salary_files()[options.get('contest')]
+            date = salary_file.date()
+            contest_players = salary_file.players()
             players = Player.objects.filter(
                 name__in=[cp.name for cp in contest_players]).exclude(name__in=INJURED_PLAYERS)
 
@@ -87,4 +87,4 @@ class Command(BaseCommand):
             print(evolve)
 
 
-INJURED_PLAYERS = reke Evans', u'Mike Scott', u'Wayne Ellington', u'Pau Gasol', u'Anthony Davis', u'Dwight Howard', u'Lance Thomas', u'Devin Harris', u'Jodie Meeks', u'LeBron James', u'Bradley Beal', u'Justise Winslow', u'Alec Burks', u'Ben Simmons', u'Rodney Stuckey', u'Nikola Pekovic', u'Joel Embiid', u'Nerlens Noel', u'Chandler Parsons', u'Khris Middleton', u'Deron Williams', u'Festus Ezeli', u'Jeremy Lin', u'Brice Johnson', u'Mo Williams', u'Tiago Splitter', 'JR Smith', u'Patrick Beverley', u'Chris Bosh', u'Brandon Rush', u'Damian Jones', u'Goran Dragic', u'Reggie Jackson', u'Delon Wright', u'Derrick Favors', u'Rajon Rondo', u'George Hill', u'Jrue Holiday', u'Quincy Acy', u'Jae Crowder', u'Ian Mahinmi', u'Jared Sullinger', u'Darrell Arthur', u'Jeremy Lamb', u'Caris LeVert', u'Gary Harris', u'Danny Green', u'Will Barton', u'Shabazz Muhammad', u'Cameron Payne', u'Tony Allen', u'Brandan Wright', u'Doug McDermott', u'Quincy Pondexter', u'Dirk Nowitzki', u'Wesley Johnson', u'Michael Carter-Williams', 'Dewayne Dedmon', u'Al-Farouq Aminu', u'Al Horford', u'Wilson Chandler', u'Jerryd Bayless'])
+INJURED_PLAYERS = set()
