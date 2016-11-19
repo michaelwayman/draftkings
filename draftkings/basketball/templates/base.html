@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Basketball</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/bootstrap/dist/css/bootstrap.min.css' %}"/>
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css' %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}"/>
 
     {#graphing#}
     <link rel="stylesheet" type="text/css" href="{% static 'bower_components/nvd3/build/nv.d3.min.css' %}"/>
@@ -23,8 +23,10 @@
     {% include 'nav.html' %}
 {% endblock %}
 
+<div id="block-container" class="container">
 {% block content %}
 {% endblock %}
+</div>
 
 <script type="text/javascript" src="{% static 'bower_components/jquery/dist/jquery.min.js' %}"></script>
 <script type="text/javascript" src="{% static 'bower_components/tether/dist/js/tether.min.js' %}"></script>

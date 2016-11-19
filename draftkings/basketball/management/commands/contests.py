@@ -111,26 +111,3 @@ def save_contest_payout_data(contest):
     for span in soup.find_all(class_='entrant-username'):
         user_name = span['title']
         Opponent.objects.create(user_name=user_name)
-
-
-def _apply_contest_information(contest):
-    # for each player try to find their PlayerStat for a particular
-    # game and update their salary to the database
-    for player in contest.players():
-
-        # try to find the PlayerStat in the database and update the salary.
-        try:
-            p = Player.objects.get(name=player.name)
-            game_log = GameLog.objects.get(player=p, game__date=contest.date())
-        except Player.DoesNotExist:
-            log.warning(
-                'Player {name} cannot be found.'.format(
-                    name=player.name))
-        except GameLog.DoesNotExist:
-            log.warning(
-                'GameLog for {name} on {date} cannot be found.'.format(
-                    name=player.name,
-                    date=contest.date()))
-        else:
-            game_log.dk_salary = player.salary
-            game_log.save()
