@@ -1,6 +1,6 @@
 
 install:
-	pip install -r pip_requires.txt
+	pip install -r requires.txt
 
 data:
 	python draftkings/manage.py loaddata stats.nba.com.json
