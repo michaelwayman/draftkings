@@ -1,0 +1,4 @@
+Sphinx==1.4.8
+sphinx-rtd-theme==0.1.9
+
+ipdb==0.9.0

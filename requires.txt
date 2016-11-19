@@ -1,0 +1,10 @@
+Django==1.9.4
+six==1.10.0
+
+gevent==1.1.1
+simplejson==3.8.2
+git+http://github.com/bufordtaylor/python-texttable
+beautifulsoup4==4.5.1
+
+-r requires/_dev.txt
+-r requires/_test.txt

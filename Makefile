@@ -1,6 +1,6 @@
 
 install:
-	pip install -r pip_requires.txt
+	pip install -r requires.txt
 
 data:
 	python draftkings/manage.py loaddata stats.nba.com.json
@@ -17,3 +17,6 @@ build_docs:
 
 new_fixture:
 	python draftkings/manage.py dumpdata basketball -o draftkings/basketball/fixtures/new_fixture.json
+
+check:
+	flake8 --max-line-length=120
