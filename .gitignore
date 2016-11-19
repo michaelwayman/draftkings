@@ -5,7 +5,3 @@ docs/_build
 docs/source
 
 db.sqlite3
-dk_salaries/*.csv
-draftkings/basketball/fixtures/dk_salaries/*.csv
-draftkings/lineup.csv
-draftkings/lineup.txt
