@@ -77,7 +77,7 @@ class ELO(object):
         Returns:
             The point spread
         """
-        return (elo_diff + 100.0) / 28.0
+        return (abs(elo_diff) + 100.0) / 28.0
 
     @classmethod
     def umov(cls, mov, elo_diff):

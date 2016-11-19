@@ -1,0 +1,22 @@
+{% load humanize %}
+
+<div class="row">
+    <div class="col-md-7"><h3>${{ object.entry_fee }}</h3></div>
+    <div class="col-md-5" style="text-align: right;"><h3>{{ object.entries }} / {{ object.total_entries }}</h3></div>
+</div>
+
+<div style="text-align: center;">
+<div class="row">
+    <div class="col-md-2"></div>
+    <div class="col-md-8"><h4>Payout targets</h4></div>
+</div>
+
+{% for payout in payouts %}
+    <div class="row">
+        <div class="col-md-2"></div>
+        <div class="col-md-3">{{ payout.start|ordinal }}{% if payout.start != payout.stop %} - {{ payout.stop|ordinal }}{% endif %}</div>
+        <div class="col-md-2">${{ payout.value }}</div>
+        <div class="col-md-3">X</div>
+    </div>
+{% endfor %}
+</div>
