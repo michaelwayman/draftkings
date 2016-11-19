@@ -1,14 +1,14 @@
-
-from django.core.management.base import BaseCommand
-
+from collections import namedtuple
+import re
 import unicodedata
 
 from bs4 import BeautifulSoup
+from django.core.management.base import BaseCommand
 import requests
-import re
-from collections import namedtuple
 
+from basketball.constants import PLAYER_MAP
 from basketball.models import Player
+
 
 Injury = namedtuple(
     'Injury', (
@@ -21,7 +21,7 @@ Injury = namedtuple(
 
 class Command(BaseCommand):
 
-    help = 'Command to print a list of all the currently injured players.'
+    help = 'Command to print a list of all the currently injured players from CBS-Sports.'
 
     def add_arguments(self, parser):
         pass
@@ -38,7 +38,9 @@ class Command(BaseCommand):
         # Create a list of Injury objects from the table rows
         injuries = []
         for row in trs:
-            r = [unicodedata.normalize("NFKD", _) for _ in list(row.strings)]  # Replace non breaking space characters with ascii
+            # Replace non breaking space characters with ascii
+            r = [unicodedata.normalize("NFKD", _) for _ in list(row.strings)]
+
             if len(r) == 5:
                 r[1] = PLAYER_MAP.get(r[1], r[1])  # Replace CBS player name to what's in the db
                 injuries.append(
@@ -55,11 +57,3 @@ class Command(BaseCommand):
                 print('Cannot find player with name "{}"'.format(injury.player))
 
         print(injured_players)
-
-
-PLAYER_MAP = {
-    'J.R. Smith': 'JR Smith',
-    'DeWayne Dedmon': 'Dewayne Dedmon',
-    'J.J. Barea': 'Jose Juan Barea',
-    ' Nene': 'Nene',
-}

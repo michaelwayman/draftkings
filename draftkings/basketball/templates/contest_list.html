@@ -21,7 +21,7 @@
                 <tr data-child-value="{{ forloop.counter0 }}">
                     <td><a class="contest-link" data-url="{% url 'contest' contest.pk %}" href="#">{{ contest }}</a></td>
                     <td>{{ contest.entry_fee }}</td>
-                    <td>{{ contest.entries }}</td>
+                    <td>{{ contest.mult_entries_allowed }}</td>
                     <td>{{ contest.total_entries }}</td>
                 </tr>
             {% endfor %}

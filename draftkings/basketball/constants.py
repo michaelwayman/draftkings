@@ -45,4 +45,5 @@ PLAYER_MAP = {
     'Stephen Zimmerman Jr.': 'Stephen Zimmerman',
     'DeAndre\' Bembry': 'DeAndre Bembry',
     'J.R. Smith': 'JR Smith',
+    'DeWayne Dedmon': 'Dewayne Dedmon',
 }

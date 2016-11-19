@@ -385,4 +385,3 @@ class OpponentLineup(models.Model):
     contest = models.ForeignKey('Contest')
     players = models.ManyToManyField('Player')
     score = models.DecimalField(decimal_places=4, max_digits=8)
-
