@@ -12,26 +12,19 @@ class Command(BaseCommand):
     help = ''
 
     def add_arguments(self, parser):
+
         parser.add_argument(
-            '-l', '--list',
-            action='store_true',
-            help='List the contest CSV files.')
-        parser.add_argument(
-            '-c', '--contest',
+            '-s', '--salary',
             action='store',
             type=int,
-            help='Generate lineups for the specified contest.')
+            help='Generate lineups using the specified salary file.')
 
     def handle(self, *args, **options):
 
-        if options.get('list'):
-            call_command('contests', '-l')
-            return
-
-        if options.get('contest'):
-            salary_file = SalaryFileManager.salary_files()[options.get('contest')]
+        if options.get('salary'):
+            salary_file = SalaryFileManager.salary_files()[options.get('salary')]
             date = salary_file.date()
-            contest_players = salary_file.players()
+            contest_players = salary_file.player_salaries()
             players = Player.objects.filter(
                 name__in=[cp.name for cp in contest_players]).exclude(name__in=INJURED_PLAYERS)
 

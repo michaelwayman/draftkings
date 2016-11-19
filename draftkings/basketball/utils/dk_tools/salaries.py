@@ -3,6 +3,7 @@ Contains classes to help manage the CSV contest files that draftkings gives out.
 """
 
 import csv
+import logging as log
 import os
 import re
 from datetime import datetime
@@ -10,6 +11,7 @@ from datetime import datetime
 from django.conf import settings
 
 from basketball.constants import PLAYER_MAP, TEAM_MAP
+from basketball.models import Player, GameLog
 
 SALARIES_FOLDER = os.path.join(settings.BASE_DIR,  'basketball', 'fixtures', 'dk_salaries')
 
@@ -50,6 +52,28 @@ class SalaryFile(object):
     def player_salaries(self):
         """Returns a list of `PlayerSalary`s from the contest"""
         return SalaryFileManager.salary_file_info(path=self._full_path())
+
+    def save_to_db(self):
+        # for each player try to find their PlayerStat for a particular
+        # game and update their salary to the database
+        for player in self.player_salaries():
+
+            # try to find the PlayerStat in the database and update the salary.
+            try:
+                p = Player.objects.get(name=player.name)
+                game_log = GameLog.objects.get(player=p, game__date=self.date())
+            except Player.DoesNotExist:
+                log.warning(
+                    'Player {name} cannot be found.'.format(
+                        name=player.name))
+            except GameLog.DoesNotExist:
+                log.warning(
+                    'GameLog for {name} on {date} cannot be found.'.format(
+                        name=player.name,
+                        date=self.date()))
+            else:
+                game_log.dk_salary = player.salary
+                game_log.save()
 
     def __str__(self):
         return self.file_name
