@@ -356,6 +356,7 @@ class Contest(models.Model):
     name = models.CharField(max_length=64)
     entry_fee = models.DecimalField(max_digits=16, decimal_places=2)
     mult_entries_allowed = models.IntegerField()
+
     total_entries = models.IntegerField()
     prize_pool = models.DecimalField(max_digits=16, decimal_places=2)
 

@@ -1,4 +1,3 @@
-from datetime import timedelta
 from django.core.management.base import BaseCommand
 
 from basketball.utils.contests import CSVManager as ContestManager
@@ -89,3 +88,4 @@ class Command(BaseCommand):
 
 
 INJURED_PLAYERS = set([u'Tyreke Evans', u'Mike Scott', u'Wayne Ellington', u'Anthony Davis', u'Dwight Howard', u'Lance Thomas', u'Devin Harris', u'Jodie Meeks', u'Tony Allen', u'Nick Young', u'Bradley Beal', u'Justise Winslow', u'Alec Burks', u'Ben Simmons', u'Draymond Green', u'Nikola Pekovic', u'Nerlens Noel', u'Khris Middleton', u'Deron Williams', u'Festus Ezeli', u'Jeremy Lin', u'Brice Johnson', u'Mo Williams', u'Tiago Splitter', u'Rodney Stuckey', 'JR Smith', u'Chris Bosh', u'Brandon Rush', u'Damian Jones', u'Goran Dragic', u'Reggie Jackson', u'Delon Wright', u'Derrick Favors', u'Rajon Rondo', u'George Hill', u'Jae Crowder', u'Ian Mahinmi', u'Jared Sullinger', u'Alexis Ajinca', u'Darrell Arthur', u'Jeremy Lamb', u'Caris LeVert', u'Gary Harris', u'Thabo Sefolosha', u'Will Barton', u'Shabazz Muhammad', u'Cameron Payne', u'Brandan Wright', u'Doug McDermott', u'Quincy Pondexter', u'Dirk Nowitzki', u'Wesley Johnson', u'Michael Carter-Williams', 'Dewayne Dedmon', u'Al-Farouq Aminu', u'Al Horford', u'Wilson Chandler', u'Jerryd Bayless'])
+
