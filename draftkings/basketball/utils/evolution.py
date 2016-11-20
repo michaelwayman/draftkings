@@ -14,6 +14,7 @@ Evolve is able to generate new lineups (Evolvables) given a pool of players.
 import random
 from abc import ABCMeta, abstractmethod
 
+from datetime import timedelta
 from texttable import Texttable
 
 
@@ -61,6 +62,9 @@ class Evolvable(object):
             genes are. (The bigger the better)
         """
         raise NotImplemented
+
+    def unique_str(self):
+        return ''.join(sorted([_.name for _ in self.genes.values()]))
 
 
 class EvolvableLineup(Evolvable):
@@ -133,18 +137,26 @@ class Evolve(object):
             parents = self.best_parents()
             self.population = [self.cross_over(parents) for _ in range(n_children)]
 
-            if i % n_print == 0:
+            if n_print and i % n_print == 0:
                 print('Generation {}:'.format(i))
                 print(self)
 
             self.set_best()
 
-    def set_best(self, n=5):
+    def set_best(self, n=10):
         """
         Updates the "best of all time" list using the current population.
         """
+        val = self.best + self.population
+        genes = []
+        visited = set()
+        for v in val:
+            if v.unique_str() not in visited:
+                visited.add(v.unique_str())
+                genes.append(v)
+        val = genes
         self.best = sorted(
-            self.best + self.population,
+            val,
             key=lambda k: k.fitness_level(), reverse=True)[:n]
 
     def best_parents(self, n=2):
@@ -256,7 +268,7 @@ class Evolve(object):
                     game_log.draft_king_points = 0
                     game_log.minutes = 0
                     game_log.points_per_min = 0
-                game_logs = player.game_logs_last_x_days(90)
+                game_logs = player.game_logs_last_x_days(20, from_date=self.date - timedelta(days=1))
                 table.add_row([
                     position, player.name, player.salary,
                     player.expected_points, game_log.draft_king_points, game_log.minutes,

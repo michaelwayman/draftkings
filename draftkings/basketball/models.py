@@ -8,6 +8,8 @@ from django.db import models
 from django.db.models import Q
 from django.conf import settings
 
+from basketball.constants import TEAM_MAP
+
 
 class Season(models.Model):
     name_choices = (
@@ -219,7 +221,7 @@ class Player(models.Model):
         game_logs = game_logs or self.gamelog_set.all()
         all_minutes = [gl.minutes for gl in game_logs]
         if all_minutes:
-            return round(sum(all_minutes) / len(all_minutes), 2)
+            return round(sum(all_minutes) / float(len(all_minutes)), 2)
         return 0
 
     def average_ppm(self, game_logs=None):
@@ -237,26 +239,28 @@ class Player(models.Model):
         return GameLog.objects.filter(player=self, game__season=season)
 
     def estimated_points(self, opponent=None, date=None, salary=None):
+
+        if isinstance(opponent, str):
+            opponent = TEAM_MAP.get(opponent, opponent)
+            opponent = Team.objects.get(abbreviation=opponent)
+
         if date is None:
             date = datetime.now()
-        game_logs_1 = self.game_logs_last_x_days(1, from_date=date - timedelta(days=1))
+        game_logs_1 = self.game_logs_last_x_days(14, from_date=date - timedelta(days=1))
         game_logs_2 = self.game_logs_last_x_days(1, from_date=date - timedelta(days=1))
         game_logs_3 = self.game_logs_last_x_days(1, from_date=date - timedelta(days=1))
 
-        # ppm = self.average_ppm(game_logs=game_logs_1)
-        # if ppm < 0.8:
-        #     return 0
-        # if self.average_minutes(game_logs=game_logs_1) < 20:
-        #     return 0
+        ret_val = self.average_points(game_logs=game_logs_1)
+        import math
+        if opponent is not None:
+            elo_diff = self.current_team.elo - opponent.elo
 
-        try:
-            gl = self.gamelog_set.get(game__date=date)
-        except:
-            return 0
+            if elo_diff > 1:
+                ret_val += elo_diff / 26
+            elif elo_diff < -1:
+                ret_val -= elo_diff / 26
 
-        return gl.draft_king_points
-
-        # return (self.average_points(game_logs=game_logs_1) * 0.2 + self.average_points(game_logs=game_logs_2) * 0.4 + self.average_points(game_logs=game_logs_3) * 0.4)
+        return ret_val
 
 
 class GameLog(models.Model):

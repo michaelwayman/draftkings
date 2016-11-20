@@ -14,6 +14,7 @@ TEAM_MAP = {
     'NO': 'NOP',
     'PHO': 'PHX',
     'SA': 'SAS',
+    'GS': 'GSW',
 }
 
 

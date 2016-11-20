@@ -1,3 +1,5 @@
+from collections import Counter
+from datetime import timedelta
 from django.core.management.base import BaseCommand
 
 from basketball.utils.dk_tools.salaries import SalaryFileManager
@@ -36,15 +38,46 @@ class Command(BaseCommand):
 
                 player.expected_points = player.estimated_points(dk.opponent, date=date, salary=player.salary)
 
+            team_gl = dict()
+            team_top = dict()
             def ffilter(x):
-                if x.salary < 3200:
+
+                if x.salary <= 3200:
                     return False
-                # gl = x.game_logs_last_x_days(30, from_date=date - timedelta(days=1))
+
                 if x.gamelog_set.filter(game__date=date).count() == 0:
                     return False
-                # ppm = sum(pm.points_per_min for pm in gl)
-                # if ppm < 0.9:
-                #     return False
+                else:
+                    if x.gamelog_set.filter(game__date=date)[0].draft_king_points == 0:
+                        return False
+
+                gl = x.game_logs_last_x_days(20, from_date=date - timedelta(days=1))
+                ppm = sum(pm.points_per_min for pm in gl) / float(len(gl))
+
+                avg_mins = x.average_minutes(game_logs=gl)
+                if avg_mins < 16:
+                    return False
+                if ppm < 0.7:
+                    return False
+
+                if x.current_team not in team_gl:
+                    team_gl[x.current_team] = x.current_team.game_logs_grouped_by_game()[:3]
+
+                c = Counter()
+                for game_logs in team_gl[x.current_team]:
+                    for g in game_logs:
+                        c[g.player] += g.minutes / 3.0
+
+                if x.current_team not in team_top:
+                    top_players = c.items()
+                    top_players.sort(key=lambda k: k[1], reverse=True)
+                    top_players = top_players[:8]
+                    top_players = {_[0] for _ in top_players}
+                    team_top[x.current_team] = top_players
+
+                if x not in team_top[x.current_team]:
+                    return False
+
                 return True
 
             # Available players for each position
@@ -74,9 +107,9 @@ class Command(BaseCommand):
             })
 
             evolve.date = date
-            evolve.run(100000, n_print=10000)
+            evolve.run(500, n_print=None)
 
             print(evolve)
 
 
-INJURED_PLAYERS = set([u'Mike Scott', u'Wayne Ellington', u'Ian Mahinmi', u'Devin Booker', u'Lance Thomas', u'Lucas Nogueira', u'Devin Harris', u"D'Angelo Russell", u'Jodie Meeks', u'Tony Allen', u'Mike Miller', u'Justise Winslow', u'Alec Burks', u'Kevin Seraphin', u'Ivica Zubac', u'Brandan Wright', u'Ben Simmons', u'Shabazz Muhammad', u'Joel Embiid', u'Montrezl Harrell', u'Nerlens Noel', u'Chandler Parsons', u'Khris Middleton', u'Deron Williams', u'Marcus Smart', u'Festus Ezeli', u'Jerryd Bayless', u'Jeremy Lin', u'Brice Johnson', 'Jose Juan Barea', u'Mo Williams', u'Tiago Splitter', u'Tyreke Evans', u'Chris Bosh', u'Brandon Rush', u'Damian Jones', u'Nikola Pekovic', u'Mike Conley', u'Reggie Jackson', u'Delon Wright', u'Derrick Favors', u'Tyson Chandler', u'Rajon Rondo', u'George Hill', u'Cody Zeller', u'Jae Crowder', u'James Ennis', u'Treveon Graham', u'Jared Sullinger', u'Alexis Ajinca', u'Jeremy Lamb', u'Caris LeVert', u'Gary Harris', u'Thabo Sefolosha', u'Will Barton', u'Cameron Payne', u'Paul George', 'CJ Miles', u'Doug McDermott', u'Quincy Pondexter', u'Dirk Nowitzki', u'Wesley Johnson', u'Michael Carter-Williams', 'Dewayne Dedmon', 'TJ Warren', u'Al-Farouq Aminu', u'Al Horford', u'Dion Waiters'])
+INJURED_PLAYERS = set()
