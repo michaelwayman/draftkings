@@ -255,10 +255,11 @@ class Evolve(object):
             lineup_actual_score = 0
             lineup_actual_mins = 0
             lineup_avg_mins = 0
+            lineup_avg_pts = 0
 
-            table = Texttable(max_width=100)
+            table = Texttable(max_width=120)
             table.set_deco(Texttable.HEADER)
-            table.add_row(['Position', 'Name', 'Cost', 'Predicted', 'Actual', 'Mins', 'Avg Mins', 'PPM', 'AVG PPM'])
+            table.add_row(['Position', 'Name', 'Cost', 'Predicted', 'Actual', 'AVG PTS', 'Mins', 'Avg Mins', 'PPM', 'AVG PPM'])
 
             for position, player in lineup.genes.items():
                 try:
@@ -268,19 +269,20 @@ class Evolve(object):
                     game_log.draft_king_points = 0
                     game_log.minutes = 0
                     game_log.points_per_min = 0
-                game_logs = player.game_logs_last_x_days(20, from_date=self.date - timedelta(days=1))
+                game_logs = player.game_logs_last_x_days(10, from_date=self.date - timedelta(days=1))
                 table.add_row([
                     position, player.name, player.salary,
-                    player.expected_points, game_log.draft_king_points, game_log.minutes,
+                    player.expected_points, game_log.draft_king_points, player.average_points(game_logs=game_logs), game_log.minutes,
                     player.average_minutes(game_logs=game_logs), game_log.points_per_min, player.average_ppm(game_logs=game_logs)
                 ])
                 lineup_actual_score += game_log.draft_king_points
                 lineup_actual_mins += game_log.minutes
-                lineup_avg_mins += player.average_minutes()
+                lineup_avg_mins += player.average_minutes(game_logs=game_logs)
+                lineup_avg_pts += player.average_points(game_logs=game_logs)
 
             table.add_row([
                 'TOTAL', '', lineup.cost,
-                lineup.expected_points, lineup_actual_score, lineup_actual_mins,
+                lineup.expected_points, lineup_actual_score, lineup_avg_pts, lineup_actual_mins,
                 lineup_avg_mins, '', ''
             ])
             ret += table.draw() + '\n'

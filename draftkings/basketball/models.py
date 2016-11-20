@@ -246,19 +246,23 @@ class Player(models.Model):
 
         if date is None:
             date = datetime.now()
-        game_logs_1 = self.game_logs_last_x_days(14, from_date=date - timedelta(days=1))
-        game_logs_2 = self.game_logs_last_x_days(1, from_date=date - timedelta(days=1))
+        game_logs_1 = self.game_logs_last_x_days(6, from_date=date - timedelta(days=1))
+        game_logs_2 = self.game_logs_last_x_days(45, from_date=date - timedelta(days=1))
         game_logs_3 = self.game_logs_last_x_days(1, from_date=date - timedelta(days=1))
 
-        ret_val = self.average_points(game_logs=game_logs_1)
+        ret_val = (self.average_points(game_logs=game_logs_1) + self.average_points(game_logs=game_logs_2)) / 2.0
+        # if game_logs_2.count() < 10:
+        #     return 0
         import math
         if opponent is not None:
             elo_diff = self.current_team.elo - opponent.elo
 
             if elo_diff > 1:
-                ret_val += elo_diff / 26
+                # ret_val += (elo_diff) / 28.0 / 2.0
+                pass
             elif elo_diff < -1:
-                ret_val -= elo_diff / 26
+                ret_val -= (elo_diff + 100) / 10.0
+                pass
 
         return ret_val
 
