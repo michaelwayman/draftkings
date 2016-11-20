@@ -5,3 +5,4 @@ docs/_build
 docs/source
 
 db.sqlite3
+mnist_*.csv

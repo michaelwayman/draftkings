@@ -8,6 +8,8 @@ from django.db import models
 from django.db.models import Q
 from django.conf import settings
 
+from basketball.constants import TEAM_MAP
+
 
 class Season(models.Model):
     name_choices = (
@@ -113,6 +115,7 @@ class Team(models.Model):
     elo = models.IntegerField(default=1500)
 
     def set_of_all_players(self):
+        # TODO: This is players of all-time, but should it just be for the current?
         return {gl.player for gl in GameLog.objects.filter(team=self)}
 
     def __str__(self):
@@ -218,7 +221,7 @@ class Player(models.Model):
         game_logs = game_logs or self.gamelog_set.all()
         all_minutes = [gl.minutes for gl in game_logs]
         if all_minutes:
-            return round(sum(all_minutes) / len(all_minutes), 2)
+            return round(sum(all_minutes) / float(len(all_minutes)), 2)
         return 0
 
     def average_ppm(self, game_logs=None):
@@ -236,14 +239,32 @@ class Player(models.Model):
         return GameLog.objects.filter(player=self, game__season=season)
 
     def estimated_points(self, opponent=None, date=None, salary=None):
+
+        if isinstance(opponent, str):
+            opponent = TEAM_MAP.get(opponent, opponent)
+            opponent = Team.objects.get(abbreviation=opponent)
+
         if date is None:
             date = datetime.now()
-        game_logs_1 = self.game_logs_last_x_days(365, from_date=date - timedelta(days=1))
-        game_logs_2 = self.game_logs_last_x_days(90, from_date=date - timedelta(days=1))
-        game_logs_3 = self.game_logs_last_x_days(5, from_date=date - timedelta(days=1))
+        game_logs_1 = self.game_logs_last_x_days(6, from_date=date - timedelta(days=1))
+        game_logs_2 = self.game_logs_last_x_days(45, from_date=date - timedelta(days=1))
+        game_logs_3 = self.game_logs_last_x_days(1, from_date=date - timedelta(days=1))
 
-        return (self.average_points(game_logs=game_logs_1) * 0.5 + self.average_points(game_logs=game_logs_2) * 0.3 +
-                self.average_points(game_logs=game_logs_3) * 0.2)
+        ret_val = (self.average_points(game_logs=game_logs_1) + self.average_points(game_logs=game_logs_2)) / 2.0
+        # if game_logs_2.count() < 10:
+        #     return 0
+        import math
+        if opponent is not None:
+            elo_diff = self.current_team.elo - opponent.elo
+
+            if elo_diff > 1:
+                # ret_val += (elo_diff) / 28.0 / 2.0
+                pass
+            elif elo_diff < -1:
+                ret_val -= (elo_diff + 100) / 10.0
+                pass
+
+        return ret_val
 
 
 class GameLog(models.Model):

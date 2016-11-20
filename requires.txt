@@ -5,6 +5,8 @@ gevent==1.1.1
 simplejson==3.8.2
 git+http://github.com/bufordtaylor/python-texttable
 beautifulsoup4==4.5.1
+numpy==1.11.1
+scipy==0.18.1
 
 -r requires/_dev.txt
 -r requires/_test.txt
