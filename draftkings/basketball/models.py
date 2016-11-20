@@ -113,6 +113,7 @@ class Team(models.Model):
     elo = models.IntegerField(default=1500)
 
     def set_of_all_players(self):
+        # TODO: This is players of all-time, but should it just be for the current?
         return {gl.player for gl in GameLog.objects.filter(team=self)}
 
     def __str__(self):
@@ -238,12 +239,24 @@ class Player(models.Model):
     def estimated_points(self, opponent=None, date=None, salary=None):
         if date is None:
             date = datetime.now()
-        game_logs_1 = self.game_logs_last_x_days(365, from_date=date - timedelta(days=1))
-        game_logs_2 = self.game_logs_last_x_days(90, from_date=date - timedelta(days=1))
-        game_logs_3 = self.game_logs_last_x_days(5, from_date=date - timedelta(days=1))
+        game_logs_1 = self.game_logs_last_x_days(1, from_date=date - timedelta(days=1))
+        game_logs_2 = self.game_logs_last_x_days(1, from_date=date - timedelta(days=1))
+        game_logs_3 = self.game_logs_last_x_days(1, from_date=date - timedelta(days=1))
 
-        return (self.average_points(game_logs=game_logs_1) * 0.5 + self.average_points(game_logs=game_logs_2) * 0.3 +
-                self.average_points(game_logs=game_logs_3) * 0.2)
+        # ppm = self.average_ppm(game_logs=game_logs_1)
+        # if ppm < 0.8:
+        #     return 0
+        # if self.average_minutes(game_logs=game_logs_1) < 20:
+        #     return 0
+
+        try:
+            gl = self.gamelog_set.get(game__date=date)
+        except:
+            return 0
+
+        return gl.draft_king_points
+
+        # return (self.average_points(game_logs=game_logs_1) * 0.2 + self.average_points(game_logs=game_logs_2) * 0.4 + self.average_points(game_logs=game_logs_3) * 0.4)
 
 
 class GameLog(models.Model):

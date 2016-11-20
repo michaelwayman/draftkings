@@ -37,11 +37,11 @@ class Command(BaseCommand):
                 player.expected_points = player.estimated_points(dk.opponent, date=date, salary=player.salary)
 
             def ffilter(x):
-                # if x.salary < 3200:
-                #     return False
+                if x.salary < 3200:
+                    return False
                 # gl = x.game_logs_last_x_days(30, from_date=date - timedelta(days=1))
-                # if x.gamelog_set.filter(game__date=date).count() == 0:
-                #     return False
+                if x.gamelog_set.filter(game__date=date).count() == 0:
+                    return False
                 # ppm = sum(pm.points_per_min for pm in gl)
                 # if ppm < 0.9:
                 #     return False
@@ -79,4 +79,4 @@ class Command(BaseCommand):
             print(evolve)
 
 
-INJURED_PLAYERS = set()
+INJURED_PLAYERS = set([u'Mike Scott', u'Wayne Ellington', u'Ian Mahinmi', u'Devin Booker', u'Lance Thomas', u'Lucas Nogueira', u'Devin Harris', u"D'Angelo Russell", u'Jodie Meeks', u'Tony Allen', u'Mike Miller', u'Justise Winslow', u'Alec Burks', u'Kevin Seraphin', u'Ivica Zubac', u'Brandan Wright', u'Ben Simmons', u'Shabazz Muhammad', u'Joel Embiid', u'Montrezl Harrell', u'Nerlens Noel', u'Chandler Parsons', u'Khris Middleton', u'Deron Williams', u'Marcus Smart', u'Festus Ezeli', u'Jerryd Bayless', u'Jeremy Lin', u'Brice Johnson', 'Jose Juan Barea', u'Mo Williams', u'Tiago Splitter', u'Tyreke Evans', u'Chris Bosh', u'Brandon Rush', u'Damian Jones', u'Nikola Pekovic', u'Mike Conley', u'Reggie Jackson', u'Delon Wright', u'Derrick Favors', u'Tyson Chandler', u'Rajon Rondo', u'George Hill', u'Cody Zeller', u'Jae Crowder', u'James Ennis', u'Treveon Graham', u'Jared Sullinger', u'Alexis Ajinca', u'Jeremy Lamb', u'Caris LeVert', u'Gary Harris', u'Thabo Sefolosha', u'Will Barton', u'Cameron Payne', u'Paul George', 'CJ Miles', u'Doug McDermott', u'Quincy Pondexter', u'Dirk Nowitzki', u'Wesley Johnson', u'Michael Carter-Williams', 'Dewayne Dedmon', 'TJ Warren', u'Al-Farouq Aminu', u'Al Horford', u'Dion Waiters'])
