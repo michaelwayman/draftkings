@@ -19,7 +19,8 @@ h1 {
             ELO calc
         </h1>
 
-        <form class="form-inline elo-form" action="">
+        <form class="form-inline elo-form" action="" method="post">
+            {% csrf_token %}
             <div class="row">
                 <div class="col-sm-3">
                     <label for="id_elo_1">Team 1</label>

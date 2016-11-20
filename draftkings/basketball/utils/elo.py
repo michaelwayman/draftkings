@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.db.models import Avg
 
 from basketball.models import Game, Season, Team
@@ -27,7 +29,7 @@ class NBAManager(object):
 
     @classmethod
     def apply_season(cls, season):
-        games = Game.objects.filter(season=season).order_by('date')
+        games = Game.objects.filter(season=season, date__lt=datetime.now().date()).order_by('date')
         cls.apply_games(games)
 
     @classmethod
