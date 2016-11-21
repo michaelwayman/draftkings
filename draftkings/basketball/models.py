@@ -352,16 +352,17 @@ class GameLog(models.Model):
 
 
 class Contest(models.Model):
+    date = models.DateTimeField()
+    description = models.TextField(blank=True)
     dk_id = models.IntegerField(unique=True)
-    name = models.CharField(max_length=64)
     entry_fee = models.DecimalField(max_digits=16, decimal_places=2)
     mult_entries_allowed = models.IntegerField()
-
-    total_entries = models.IntegerField()
+    name = models.CharField(max_length=64)
     prize_pool = models.DecimalField(max_digits=16, decimal_places=2)
+    total_entries = models.IntegerField()
 
     def __str__(self):
-        return str(self.dk_id)
+        return str(self.name)
 
 
 class ContestPayout(models.Model):
@@ -384,4 +385,4 @@ class OpponentLineup(models.Model):
     opponent = models.ForeignKey('Opponent')
     contest = models.ForeignKey('Contest')
     players = models.ManyToManyField('Player')
-    score = models.DecimalField(decimal_places=4, max_digits=8)
+    score = models.DecimalField(decimal_places=2, max_digits=5, default=0)
