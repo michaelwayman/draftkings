@@ -192,7 +192,7 @@ def fetch_player_info(player):
     response.raise_for_status()
 
     # Load the data we got back into a `NBAPlayerMisc`
-    r = NBAPlayerMisc(*json.loads(response.content)['resultSets'][0]['rowSet'][0])
+    r = NBAPlayerMisc(*json.loads(response.content)['resultSets'][0]['rowSet'][0][:26])
 
     # Update the player in the db and save.
     player.birthday = r.birthdate.split('T')[0]
