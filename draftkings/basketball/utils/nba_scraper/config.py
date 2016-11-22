@@ -16,6 +16,7 @@ HEADERS = {'user-agent': 'Mozilla/4.1 (Macintosh; Intel Mac OS X 10_8_1)'}
 SCHEME = 'http'
 HOST = 'stats.nba.com'
 
+
 # Config to get all players for a particular season
 # http://stats.nba.com/stats/commonallplayers?IsOnlyCurrentSeason=0&LeagueID=00&Season=2016-17
 ALL_PLAYERS = '/stats/commonallplayers'
@@ -85,6 +86,7 @@ NBAGameLog = namedtuple(
         'pts',
         'plus_minus',
         'video_available',))
+
 
 # Config to get an individual player's miscellaneous information
 # http://stats.nba.com/stats/commonplayerinfo?LeagueID=00&PlayerID=201566&SeasonType=Regular+Season
