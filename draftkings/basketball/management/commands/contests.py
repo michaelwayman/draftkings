@@ -1,16 +1,17 @@
 import logging as log
+
+import datetime
 import simplejson as json
 import re
 
-from os import listdir
-from os.path import isfile, join
+from os import listdir, path
 
 from bs4 import BeautifulSoup
 from django.core.management.base import BaseCommand
 from simplejson.scanner import JSONDecodeError
 
 from basketball.constants import CONTEST_BATCH_DIR, CONTEST_PAGE_DIR
-from basketball.models import Player, GameLog, Opponent, Contest, ContestPayout
+from basketball.models import Opponent, Contest, ContestPayout
 
 
 class Command(BaseCommand):
@@ -29,31 +30,36 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         if options.get('something'):
-            contest_batch_files = [f for f in listdir(CONTEST_BATCH_DIR) if isfile(join(CONTEST_BATCH_DIR, f))]
+
+            # Get all the contests file names from the contests batches folder
+            contest_batch_files = filter(
+                lambda k: path.isfile(path.join(CONTEST_BATCH_DIR, k)) and re.match('(\d{2}-\d{2}-\d{4}\.json)', k),
+                listdir(CONTEST_BATCH_DIR))
+
+            # Save all the contest data to the database
             for file_name in contest_batch_files:
-                if re.match('(\d{2}-\d{2}-\d{4}\.json)', file_name):
-                    load_contest_data_by_day(f)
+                contests_list = load_contest_data_by_day(file_name)
+                for contest_dict in contests_list:
+                    save_contest_data(contest_dict)
 
-            contest_html_files = [f for f in listdir(CONTEST_PAGE_DIR) if isfile(join(CONTEST_PAGE_DIR, f))]
-
-            # Remove invalid files
+            # Get the HTML file names that contain the 'extra' information for each contest
+            contest_html_files = filter(lambda k: path.isfile(path.join(CONTEST_PAGE_DIR, k)), listdir(CONTEST_PAGE_DIR))
             contest_file_exp = re.compile('contest-([0-9]*).html')
-            files = [f for f in contest_html_files if contest_file_exp.match(f)]
+            files = filter(contest_file_exp.match, contest_html_files)
 
+            # Read in the HTML files and save the contest data
             for file_name in files:
-                # pull id from file path
-                dk_id = contest_file_exp.search(file_name).group(1)
+                dk_id = contest_file_exp.search(file_name).group(1)  # pull id from file path
                 try:
                     contest = Contest.objects.get(dk_id=dk_id)
                     save_contest_payout_data(contest)
                 except Contest.DoesNotExist:
                     log.warning('No contest with contest dk_id: {dk_id}'.format(
-                        dk_id=dk_id
-                    ))
+                        dk_id=dk_id))
 
 
 def load_contest_data_by_day(file_name):
-    with open(join(CONTEST_BATCH_DIR, file_name)) as content:
+    with open(path.join(CONTEST_BATCH_DIR, file_name)) as content:
         try:
             contest_dict = json.load(content)
         except JSONDecodeError:
@@ -63,8 +69,7 @@ def load_contest_data_by_day(file_name):
             return
 
         contest_dicts = contest_dict['Contests']
-        contests = [save_contest_data(contest) for contest in contest_dicts]
-        return contests
+        return contest_dicts
 
 
 def save_contest_data(contest_dict):
@@ -75,21 +80,24 @@ def save_contest_data(contest_dict):
         entries_allowed = contest_dict['mec']
         total_entries = contest_dict['m']
         prize_pool = contest_dict['po']
+        date = datetime.datetime.fromtimestamp(float(
+            re.match('.*?([0-9]+).*', contest_dict['sd']).groups()[0]) / 1000)
     except KeyError:
         log.warning('Trouble extracting data from contest json {json}'.format(
-            json=contest_dict
-        ))
+            json=contest_dict))
         return
 
-    contest, created = Contest.objects.update_or_create(dk_id=dk_id, name=name, entry_fee=entry_fee,
-                                                        mult_entries_allowed=entries_allowed,
-                                                        total_entries=total_entries, prize_pool=prize_pool)
+    contest, created = Contest.objects.update_or_create(
+        dk_id=dk_id, name=name, entry_fee=entry_fee,
+        mult_entries_allowed=entries_allowed, date=date,
+        total_entries=total_entries, prize_pool=prize_pool)
+
     return contest
 
 
 def save_contest_payout_data(contest):
 
-    with open(join(CONTEST_PAGE_DIR, 'contest-2703870.html')) as file:
+    with open(path.join(CONTEST_PAGE_DIR, 'contest-2703870.html')) as file:
         soup = BeautifulSoup(file, 'html.parser')
 
     payout_rows = soup.find_all(class_='dk-grid')[-1:][0].contents
@@ -108,6 +116,7 @@ def save_contest_payout_data(contest):
             start, stop, value = matches.group(1, 1, 2)
             ContestPayout.objects.create(contest=contest, start=start, stop=stop, value=value)
 
-    for span in soup.find_all(class_='entrant-username'):
-        user_name = span['title']
-        Opponent.objects.create(user_name=user_name)
+    # Not in use yet
+    # for span in soup.find_all(class_='entrant-username'):
+    #     user_name = span['title']
+    #     Opponent.objects.create(user_name=user_name)
