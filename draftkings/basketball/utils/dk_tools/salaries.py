@@ -53,6 +53,10 @@ class SalaryFile(object):
         """Returns a list of `PlayerSalary`s from the contest"""
         return SalaryFileManager.salary_file_info(path=self._full_path())
 
+    def players_from_db(self):
+        """Returns a QuerySet from the db of the players in the salary file"""
+        return Player.objects.filter(name__in=[p.name for p in self.player_salaries()])
+
     def save_to_db(self):
         # for each player try to find their PlayerStat for a particular
         # game and update their salary to the database
