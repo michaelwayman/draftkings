@@ -70,8 +70,19 @@ class EvolvableLineup(Evolvable):
         """The number of draftking points this lineup is expected to produce"""
         if not self.cache_properties:
             self._cache['expected_points'] = sum(
-                [player.expected_points for player in self.genes.values() if player])
+                [player.expected_points * player.probability for player in self.genes.values() if player])
         return self._cache['expected_points']
+
+    @property
+    def probability(self):
+        if not self.cache_properties:
+            prob = 1
+            for player in self.genes.values():
+                prob *= player.probability
+            # self._cache['probability'] = sum(
+            #     [player.probability for player in self.genes.values() if player])
+            self._cache['probability'] = prob
+        return self._cache['probability']
 
     @property
     def cost(self):
@@ -83,7 +94,7 @@ class EvolvableLineup(Evolvable):
 
     def can_survive(self):
         """Our lineups cannot survive if they cost more than 50,000"""
-        return self.cost <= 50000
+        return 48000 < self.cost <= 50000
 
     def fitness_level(self):
         """The more draftking points the better the lineup"""
@@ -139,7 +150,7 @@ class Evolve(object):
 
             self.set_best()
 
-    def set_best(self, n=5):
+    def set_best(self, n=10):
         """
         Updates the "best of all time" list using the current population.
         """
@@ -244,9 +255,9 @@ class Evolve(object):
             lineup_actual_mins = 0
             lineup_avg_mins = 0
 
-            table = Texttable(max_width=100)
+            table = Texttable(max_width=130)
             table.set_deco(Texttable.HEADER)
-            table.add_row(['Position', 'Name', 'Cost', 'Predicted', 'Actual', 'Mins', 'Avg Mins', 'PPM', 'AVG PPM'])
+            table.add_row(['Position', 'Name', 'Cost', 'Predicted', 'Actual', 'Mins', 'Avg Mins', 'PPM', 'AVG PPM', 'Probability'])
 
             for position, player in lineup.genes.items():
                 try:
@@ -260,7 +271,8 @@ class Evolve(object):
                 table.add_row([
                     position, player.name, player.salary,
                     player.expected_points, game_log.draft_king_points, game_log.minutes,
-                    player.average_minutes(game_logs=game_logs), game_log.points_per_min, player.average_ppm(game_logs=game_logs)
+                    player.average_minutes(game_logs=game_logs), game_log.points_per_min,
+                    player.average_ppm(game_logs=game_logs), player.probability
                 ])
                 lineup_actual_score += game_log.draft_king_points
                 lineup_actual_mins += game_log.minutes
@@ -269,7 +281,7 @@ class Evolve(object):
             table.add_row([
                 'TOTAL', '', lineup.cost,
                 lineup.expected_points, lineup_actual_score, lineup_actual_mins,
-                lineup_avg_mins, '', ''
+                lineup_avg_mins, '', '', ''
             ])
             ret += table.draw() + '\n'
             ret += '=' * 100 + '\n'

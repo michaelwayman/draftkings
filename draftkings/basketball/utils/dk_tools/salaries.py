@@ -54,8 +54,12 @@ class SalaryFile(object):
         return SalaryFileManager.salary_file_info(path=self._full_path())
 
     def players_from_db(self):
-        """Returns a QuerySet from the db of the players in the salary file"""
-        return Player.objects.filter(name__in=[p.name for p in self.player_salaries()])
+        """Returns a list of `models.Player`s from the db with their attributes from the salary file defined"""
+        players = Player.objects.filter(name__in=[p.name for p in self.player_salaries()])
+        for player in players:
+            # player
+            pass
+        return
 
     def save_to_db(self):
         # for each player try to find their PlayerStat for a particular

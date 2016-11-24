@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 
+from basketball.utils.bayes import Probability
 from basketball.utils.dk_tools.salaries import SalaryFileManager
 from basketball.utils.evolution import Evolve
 from basketball.models import Player
