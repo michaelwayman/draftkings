@@ -70,7 +70,7 @@ class EvolvableLineup(Evolvable):
         """The number of draftking points this lineup is expected to produce"""
         if not self.cache_properties:
             self._cache['expected_points'] = sum(
-                [player.expected_points * player.probability for player in self.genes.values() if player])
+                [player.expected_points for player in self.genes.values() if player])
         return self._cache['expected_points']
 
     @property

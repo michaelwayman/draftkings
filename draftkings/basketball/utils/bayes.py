@@ -1,22 +1,42 @@
 
-class Probability(object):
+class PManager(object):
+    def __init__(self, rgroups):
+        self.rgroups = rgroups
 
-    @classmethod
-    def of_target(cls, player, start, stop=None, game_logs=None):
+    def calc_rgroup_probability(self, lst, upper_bound=True, key=None):
+        if key is None:
+            key = lambda x: x
 
-        if game_logs is None:
-            game_logs = player.gamelog_set.all()
-
-        total_games = game_logs.count()
-
-        if total_games == 0:
+        total = len(lst)
+        if total == 0:
             return 0
 
-        total_hits = 0
-        for gl in game_logs:
-            if stop is None and gl.draft_king_points >= start:
-                total_hits += 1
-            elif start <= gl.draft_king_points < stop:
-                total_hits += 1
+        for rgroup in self.rgroups:
+            counter = 0
+            for item in lst:
+                value = key(item)
+                if rgroup.d1 <= value:
+                    if upper_bound and rgroup.d2 <= value:
+                        continue
+                    counter += 1
 
-        return total_hits / float(total_games)
+            rgroup.probability = counter / float(total)
+
+    def rgroup(self, value, upper_bound=True):
+        for i, rgroup in enumerate(self.rgroups):
+            if rgroup.d1 <= value:
+                if upper_bound and rgroup.d2 <= value:
+                    continue
+                return i
+        return -1
+
+
+class RGroup(object):
+
+    def __init__(self, d1, d2=None, probability=0.00001):
+        self.d1 = d1
+        self.d2 = d2
+        self.probability = probability
+
+    def __str__(self):
+        return '{}-{} @ {}'.format(self.d1, self.d2, self.probability)

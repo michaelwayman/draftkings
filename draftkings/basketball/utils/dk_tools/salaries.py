@@ -20,11 +20,11 @@ class PlayerSalary(object):
     """
     Represents am NBA player from the csv salary file provided by DraftKings.
     """
-    def __init__(self):
-        self.position = ''
-        self.name = ''
-        self.salary = 0
-        self.opponent = ''
+    def __init__(self, name=None, position=None, salary=None, opponent=None):
+        self.position = position
+        self.name = name
+        self.salary = salary
+        self.opponent = opponent
 
 
 class SalaryFile(object):
@@ -42,24 +42,16 @@ class SalaryFile(object):
         self.file_name = file_name
 
     def _full_path(self):
-        """Full path to the file *relative* to this folder lol"""
+        """
+        Returns:
+            Full path to the file *relative* to this folder lol"""
         return os.path.join(SALARIES_FOLDER, self.file_name)
 
     def date(self):
-        """converts the CSV file's name into a date object"""
+        """
+        Returns:
+            a date object from the CSV file's name"""
         return datetime.strptime(self.file_name, '%m-%d-%Y.csv')
-
-    def player_salaries(self):
-        """Returns a list of `PlayerSalary`s from the contest"""
-        return SalaryFileManager.salary_file_info(path=self._full_path())
-
-    def players_from_db(self):
-        """Returns a list of `models.Player`s from the db with their attributes from the salary file defined"""
-        players = Player.objects.filter(name__in=[p.name for p in self.player_salaries()])
-        for player in players:
-            # player
-            pass
-        return
 
     def save_to_db(self):
         # for each player try to find their PlayerStat for a particular
@@ -71,7 +63,7 @@ class SalaryFile(object):
                 p = Player.objects.get(name=player.name)
                 game_log = GameLog.objects.get(player=p, game__date=self.date())
             except Player.DoesNotExist:
-                log.warning(
+                log.error(
                     'Player {name} cannot be found.'.format(
                         name=player.name))
             except GameLog.DoesNotExist:
@@ -83,6 +75,50 @@ class SalaryFile(object):
                 game_log.dk_salary = player.salary
                 game_log.save()
 
+    def from_db(self):
+        """
+        Returns:
+            a list of `models.Player` from the db with the salary attributes assigned"""
+        retval = []
+        player_salaries = self.player_salaries()
+        players = Player.objects.filter(name__in=[ps.name for ps in player_salaries])
+        for ps in player_salaries:
+            p = players.get(name=ps.name)
+            p.salary = ps.salary
+            p.position = ps.position
+            p.opponent = ps.opponent
+            retval.append(p)
+        return retval
+
+    def player_salaries(self):
+        """
+        Returns:
+             a list of `PlayerSalary`s
+        """
+        file_obj = open(self._full_path())
+        reader = csv.DictReader(file_obj, dialect=SalaryFileDialect)
+        all_players = []
+        for row in reader:
+            # Figure out the teams
+            teams_playing = row['GameInfo'].upper().split(' ')[0].split('@')
+            teams_playing = [TEAM_MAP.get(t, t) for t in teams_playing]
+            current_players_team = row['teamAbbrev'].upper()
+            if teams_playing[0] == current_players_team:
+                opponent = teams_playing[1]
+            else:
+                opponent = teams_playing[0]
+
+            # Make the PlayerSalary
+            player = PlayerSalary(
+                name=PLAYER_MAP.get(row['Name'], row['Name']),
+                position=set(row['Position'].split('/')),
+                salary=int(row['Salary']),
+                opponent=opponent)
+
+            all_players.append(player)
+
+        return all_players
+
     def __str__(self):
         return self.file_name
 
@@ -91,51 +127,15 @@ class SalaryFileManager(object):
 
     @classmethod
     def salary_files(cls):
+        """
+        Returns:
+             a list of the available `SalaryFile`s
+        """
         file_names = filter(
             lambda k: re.match('(\d{2}-\d{2}-\d{4}\.csv)', k),
             os.listdir(SALARIES_FOLDER))
         file_names.sort()
         return [SalaryFile(name) for name in file_names]
-
-    @classmethod
-    def salary_file_info(cls, file_obj=None, path=None):
-        """
-        Given a draft king contest csv file return a list of PlayerSalary
-        """
-        if file_obj is None and path is None:
-            raise ValueError('You must supply either a file object or a path to a file.')
-
-        def _get_info(file_obj):
-            """Returns a list of `SalaryObject`s from the contest CSV file."""
-            reader = csv.DictReader(file_obj, dialect=SalaryFileDialect)
-            all_players = []
-            for row in reader:
-                # Figure out the teams
-                teams_playing = row['GameInfo'].upper().split(' ')[0].split('@')
-                teams_playing = [TEAM_MAP.get(t, t) for t in teams_playing]
-                current_players_team = row['teamAbbrev'].upper()
-
-                # Make the PlayerSalary
-                player = PlayerSalary()
-                player.position = row['Position']
-                player.name = PLAYER_MAP.get(row['Name'], row['Name'])
-                player.salary = int(row['Salary'])
-                # Figure out the opponent
-                if teams_playing[0] == current_players_team:
-                    player.opponent = teams_playing[1]
-                else:
-                    player.opponent = teams_playing[0]
-
-                all_players.append(player)
-
-            return all_players
-
-        # Figure out whether we were passed a file or a path to a file.
-        if path:
-            with open(path) as f:
-                return _get_info(f)
-        elif file_obj:
-            return _get_info(file_obj)
 
 
 class SalaryFileDialect(csv.Dialect):
