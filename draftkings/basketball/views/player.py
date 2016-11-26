@@ -1,10 +1,12 @@
+from collections import defaultdict
 
 import simplejson as json
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 from django import forms
+from scipy.stats.stats import pearsonr
 
-from basketball.models import Player, Season
+from basketball.models import Player, Season, GameLog
 
 
 class PlayerList(ListView):
@@ -28,7 +30,9 @@ class PlayerDetail(DetailView):
             point_values.append({
                 'x': i + 1,
                 'y': gl.draft_king_points,
-                'game': str(gl.game)
+                'game': str(gl.game),
+                'elo_home': str(gl.game.home_team) + ' ' + str(gl.game.home_elo),
+                'elo_away': str(gl.game.away_team) + ' ' + str(gl.game.away_elo),
             })
         return point_values
 
@@ -78,4 +82,29 @@ class PlayerDetail(DetailView):
         context['average_playtime'] = round(player.average_minutes(game_logs=game_logs), 2)
         context['average_pts_per_min'] = round(context['average_points'] / context['average_playtime'], 2)
         context['game_logs'] = game_logs
+
+        # team_logs_by_game = player.current_team.game_logs_grouped_by_game(game_logs=GameLog.objects.filter(game__season=Season.objects.get(name='16')))
+        # from numpy import cov
+        # players = set()
+        # for tlbg in team_logs_by_game:
+        #     for foo in tlbg:
+        #         players.add(foo.player.name)
+        #
+        # logs = defaultdict(list)
+        # for tlbg in team_logs_by_game:
+        #     for p in players:
+        #         p_log = filter(lambda k: k.player.name == p, tlbg)
+        #         if p_log:
+        #             logs[p].append(p_log[0].minutes)
+        #         else:
+        #             logs[p].append(0)
+        #
+        # correlations = dict()
+        # for k, v in logs.items():
+        #     x = logs[player.name]
+        #     y = v
+        #
+        #     # correlations[k] = pearsonr(x, y)
+        #     correlations[k] = cov(x, y)
+        # import ipdb; ipdb.set_trace()
         return context

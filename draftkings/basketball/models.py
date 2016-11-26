@@ -104,6 +104,11 @@ class Game(models.Model):
             return self.home_elo
         return self.away_elo
 
+    def elo_diff_for_team(self, team):
+        if team.pk == self.home_team.pk:
+            return self.home_elo - self.away_elo
+        return self.away_elo - self.home_elo
+
 
 class Team(models.Model):
     scrape_id = models.IntegerField(null=True, blank=True, unique=True)

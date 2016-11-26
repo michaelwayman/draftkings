@@ -14,12 +14,17 @@
         <h1>
             {{ object }}
         </h1>
+        <h3>
+            {{ object.home_elo }} - {{ object.away_elo }}
+        </h3>
 
         <table class="table table-striped" style="font-size: .8em;">
             <thead>
             <tr>
                 <th>Player</th>
+                <th>Salary</th>
                 <th>Team</th>
+                <th>Position</th>
                 <th>Playtime</th>
                 <th>Avg Playtime</th>
                 <th>DK Points</th>
@@ -30,7 +35,9 @@
             {% for stat in stats %}
                 <tr>
                     <td><a href="{% url 'player' stat.player.pk %}">{{ stat.player.name }}</a></td>
+                    <td>{{ stat.dk_salary }}</td>
                     <td><a href="{% url 'team' stat.team.pk %}">{{ stat.team }}</a></td>
+                    <td>{{ stat.player.position }}</td>
                     <td>{{ stat.minutes }}</td>
                     <td>{{ stat.player.average_minutes }}</td>
                     <td>{{ stat.draft_king_points }}</td>

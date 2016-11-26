@@ -46,4 +46,8 @@ PLAYER_MAP = {
     'DeAndre\' Bembry': 'DeAndre Bembry',
     'J.R. Smith': 'JR Smith',
     'DeWayne Dedmon': 'Dewayne Dedmon',
+    'Derrick Jones Jr.': 'Derrick Jones, Jr.',
+    'Juancho Hernangomez': 'Juan Hernangomez',
+    'Walter Tavares': 'Edy Tavares',
+    'Johnny O\'Bryant': 'Johnny O\'Bryant III',
 }
