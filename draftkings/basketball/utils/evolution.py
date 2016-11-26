@@ -14,6 +14,7 @@ Evolve is able to generate new lineups (Evolvables) given a pool of players.
 import random
 from abc import ABCMeta, abstractmethod
 
+from datetime import timedelta
 from texttable import Texttable
 
 
@@ -74,17 +75,6 @@ class EvolvableLineup(Evolvable):
         return self._cache['expected_points']
 
     @property
-    def probability(self):
-        if not self.cache_properties:
-            prob = 1
-            for player in self.genes.values():
-                prob *= player.probability
-            # self._cache['probability'] = sum(
-            #     [player.probability for player in self.genes.values() if player])
-            self._cache['probability'] = prob
-        return self._cache['probability']
-
-    @property
     def cost(self):
         """How much does this lineup cost in terms of salary"""
         if not self.cache_properties:
@@ -94,11 +84,11 @@ class EvolvableLineup(Evolvable):
 
     def can_survive(self):
         """Our lineups cannot survive if they cost more than 50,000"""
-        return 48000 < self.cost <= 50000
+        return self.cost <= 50000
 
     def fitness_level(self):
         """The more draftking points the better the lineup"""
-        return self.expected_points
+        return self.expected_points, sum(_.probability for _ in self.genes.values())
 
 
 class Evolve(object):
@@ -150,7 +140,7 @@ class Evolve(object):
 
             self.set_best()
 
-    def set_best(self, n=10):
+    def set_best(self, n=100):
         """
         Updates the "best of all time" list using the current population.
         """
@@ -254,10 +244,11 @@ class Evolve(object):
             lineup_actual_score = 0
             lineup_actual_mins = 0
             lineup_avg_mins = 0
+            lineup_avg_pts = 0
 
             table = Texttable(max_width=130)
             table.set_deco(Texttable.HEADER)
-            table.add_row(['Position', 'Name', 'Cost', 'Predicted', 'Actual', 'Mins', 'Avg Mins', 'PPM', 'AVG PPM', 'Probability'])
+            table.add_row(['Position', 'Name', 'Cost', 'Predicted', 'Actual', 'Avg', 'Mins', 'Avg Mins', 'PPM', 'AVG PPM', 'Probability'])
 
             for position, player in lineup.genes.items():
                 try:
@@ -267,20 +258,22 @@ class Evolve(object):
                     game_log.draft_king_points = 0
                     game_log.minutes = 0
                     game_log.points_per_min = 0
-                game_logs = player.game_logs_last_x_days(90)
+                game_logs = player.game_logs_last_x_days(90, from_date=self.date - timedelta(days=1))
                 table.add_row([
                     position, player.name, player.salary,
-                    player.expected_points, game_log.draft_king_points, game_log.minutes,
+                    player.expected_points, game_log.draft_king_points, player.average_points(game_logs=game_logs), game_log.minutes,
                     player.average_minutes(game_logs=game_logs), game_log.points_per_min,
                     player.average_ppm(game_logs=game_logs), player.probability
                 ])
                 lineup_actual_score += game_log.draft_king_points
                 lineup_actual_mins += game_log.minutes
-                lineup_avg_mins += player.average_minutes()
+                lineup_avg_mins += player.average_minutes(game_logs=game_logs)
+                lineup_avg_pts += player.average_points(game_logs=game_logs)
+            lineup.actual = lineup_actual_score
 
             table.add_row([
                 'TOTAL', '', lineup.cost,
-                lineup.expected_points, lineup_actual_score, lineup_actual_mins,
+                lineup.expected_points, lineup_actual_score, lineup_avg_pts, lineup_actual_mins,
                 lineup_avg_mins, '', '', ''
             ])
             ret += table.draw() + '\n'

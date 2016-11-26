@@ -77,7 +77,9 @@
             <tr>
                 <th>Player</th>
                 <th>Position</th>
+                <th>Average Points</th>
                 <th>Average Playtime</th>
+                <th>Ave PPM</th>
                 <th>Games</th>
             </tr>
             </thead>
@@ -86,7 +88,9 @@
                 <tr>
                     <td><a href="{% url 'player' player.pk %}">{{ player.name }}</a></td>
                     <td>{{ player.position }}</td>
+                    <td>{% avg_pts_for_season player season %}</td>
                     <td>{% avg_mins_for_season player season %}</td>
+                    <td>{% avg_ppm_for_season player season %}</td>
                     <td>{% game_count_for_season player season %}</td>
                 </tr>
             {% endfor %}

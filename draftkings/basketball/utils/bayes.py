@@ -15,18 +15,18 @@ class PManager(object):
             counter = 0
             for item in lst:
                 value = key(item)
+                if upper_bound and rgroup.d2 and rgroup.d2 <= value:
+                    continue
                 if rgroup.d1 <= value:
-                    if upper_bound and rgroup.d2 <= value:
-                        continue
                     counter += 1
 
             rgroup.probability = counter / float(total)
 
     def rgroup(self, value, upper_bound=True):
         for i, rgroup in enumerate(self.rgroups):
+            if upper_bound and rgroup.d2 and rgroup.d2 <= value:
+                continue
             if rgroup.d1 <= value:
-                if upper_bound and rgroup.d2 <= value:
-                    continue
                 return i
         return -1
 
