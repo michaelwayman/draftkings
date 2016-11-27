@@ -208,21 +208,33 @@ class Player(models.Model):
         return self.gamelog_set.filter(q)
 
     def average_points(self, game_logs=None):
-        game_logs = game_logs or self.gamelog_set.all()
+        if game_logs:
+            game_logs = game_logs.filter(player=self)
+        else:
+            game_logs = self.gamelog_set.all()
+
         all_draft_king_points = [gl.draft_king_points for gl in game_logs]
         if all_draft_king_points:
             return round(sum(all_draft_king_points) / len(all_draft_king_points), 2)
         return 0
 
     def average_minutes(self, game_logs=None):
-        game_logs = game_logs or self.gamelog_set.all()
+        if game_logs:
+            game_logs = game_logs.filter(player=self)
+        else:
+            game_logs = self.gamelog_set.all()
+
         all_minutes = [gl.minutes for gl in game_logs]
         if all_minutes:
             return round(sum(all_minutes) / len(all_minutes), 2)
         return 0
 
     def average_ppm(self, game_logs=None):
-        game_logs = game_logs or self.gamelog_set.all()
+        if game_logs:
+            game_logs = game_logs.filter(player=self)
+        else:
+            game_logs = self.gamelog_set.all()
+
         avg_minutes = self.average_minutes(game_logs=game_logs)
         avg_points = self.average_points(game_logs=game_logs)
         if avg_minutes and avg_points:

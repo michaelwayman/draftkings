@@ -15,6 +15,7 @@ import random
 from abc import ABCMeta, abstractmethod
 
 from texttable import Texttable
+import progressbar
 
 
 class Evolvable(object):
@@ -113,7 +114,7 @@ class Evolve(object):
         self.population = []
         self.best = []
 
-    def run(self, n=1000, n_children=4, n_print=4000):
+    def run(self, n=1000, n_best=5, n_children=4):
         """Starts and runs the evolution process.
 
         1. Create the initial population
@@ -129,23 +130,22 @@ class Evolve(object):
             self.population = [self.generate_random_parent() for _ in range(n_children)]
             self.set_best()
 
+        bar = progressbar.ProgressBar(min_value=0, max_value=n)
+
         for i in xrange(n):
             parents = self.best_parents()
             self.population = [self.cross_over(parents) for _ in range(n_children)]
+            bar.update(i + 1)
 
-            if i % n_print == 0:
-                print('Generation {}:'.format(i))
-                print(self)
+            self.set_best(n_best=n_best)
 
-            self.set_best()
-
-    def set_best(self, n=5):
+    def set_best(self, n_best=5):
         """
         Updates the "best of all time" list using the current population.
         """
         self.best = sorted(
             self.best + self.population,
-            key=lambda k: k.fitness_level(), reverse=True)[:n]
+            key=lambda k: k.fitness_level(), reverse=True)[:n_best]
 
     def best_parents(self, n=2):
         """Select the best n `Evolvable`s from the current population.
@@ -244,7 +244,7 @@ class Evolve(object):
             lineup_actual_mins = 0
             lineup_avg_mins = 0
 
-            table = Texttable(max_width=100)
+            table = Texttable(max_width=130)
             table.set_deco(Texttable.HEADER)
             table.add_row(['Position', 'Name', 'Cost', 'Predicted', 'Actual', 'Mins', 'Avg Mins', 'PPM', 'AVG PPM'])
 
@@ -266,6 +266,7 @@ class Evolve(object):
                 lineup_actual_mins += game_log.minutes
                 lineup_avg_mins += player.average_minutes()
 
+            lineup.actual = lineup_actual_score
             table.add_row([
                 'TOTAL', '', lineup.cost,
                 lineup.expected_points, lineup_actual_score, lineup_actual_mins,
