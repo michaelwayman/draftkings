@@ -46,4 +46,14 @@ PLAYER_MAP = {
     'DeAndre\' Bembry': 'DeAndre Bembry',
     'J.R. Smith': 'JR Smith',
     'DeWayne Dedmon': 'Dewayne Dedmon',
+    'Juancho Hernangomez': 'Juan Hernangomez',
+    'Derrick Jones Jr.': 'Derrick Jones, Jr.',
+    'K. Caldwell-Pope': 'Kentavious Caldwell-Pope',
+    'M. Kidd-Gilchrist': 'Michael Kidd-Gilchrist',
+    'A. Varejao': 'Anderson Varejao',
+    'M. Gbinije': 'Michael Gbinije',
+    'M. Plumlee': 'Mason Plumlee',
+    'John Lucas': 'John Lucas III',
+    'A. Harrison': 'Aaron Harrison',  # questionable
+    'H. Ellenson': 'Henry Ellenson',
 }

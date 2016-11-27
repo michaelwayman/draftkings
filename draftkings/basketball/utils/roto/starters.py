@@ -1,8 +1,9 @@
 import datetime
 import re
-
 import os
+from itertools import chain
 from os import path
+import logging as log
 
 import simplejson as json
 import requests
@@ -10,6 +11,8 @@ import requests
 from bs4 import BeautifulSoup
 from django.conf import settings
 
+from basketball.constants import PLAYER_MAP
+from basketball.models import Player
 
 STARTERS_FOLDER = path.join(settings.BASE_DIR, 'basketball', 'fixtures', 'starters')
 
@@ -37,6 +40,16 @@ class StartersFileManager(object):
                     'starters': starters,
                     'injured': injured}))
 
+    @classmethod
+    def starters_file_for_date(cls, date):
+        starter_file = filter(
+            lambda k: k.date() == date,
+            cls.starter_files())
+
+        if starter_file:
+            return starter_file[0]
+        return None
+
 
 class StartersFile(object):
 
@@ -62,6 +75,15 @@ class StartersFile(object):
     def _read_file(self):
         with open(self._full_path(), 'r') as f:
             self._data = json.loads(f.read())
+            self._data['injured'] = set(PLAYER_MAP.get(p, p) for p in self._data['injured'])
+            self._data['starters'] = set(PLAYER_MAP.get(p, p) for p in self._data['starters'])
+
+            for name in chain(*self._data.values()):
+                try:
+                    Player.objects.get(name=name)
+                except Player.DoesNotExist as ex:
+                    log.error('Cannot find player {} in the database.'.format(name))
+                    raise ex
 
     def injured_players(self):
         if self._data is None:
@@ -88,7 +110,7 @@ class RotoScraper(object):
         starter_data = soup.find_all('a', href=has_player_href, title=has_title_attr)
         injured_data = soup.find_all('a', href=has_player_href, title=no_title)
 
-        starters = map(lambda x: x.text, starter_data)
+        starters = map(lambda x: x['title'], starter_data)
         injured = map(lambda x: x.text, injured_data)
 
         return starters, injured
