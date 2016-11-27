@@ -56,4 +56,5 @@ PLAYER_MAP = {
     'John Lucas': 'John Lucas III',
     'A. Harrison': 'Aaron Harrison',  # questionable
     'H. Ellenson': 'Henry Ellenson',
+    'D. Ochefu': 'Daniel Ochefu',
 }
