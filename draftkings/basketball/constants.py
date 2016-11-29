@@ -48,13 +48,8 @@ PLAYER_MAP = {
     'DeWayne Dedmon': 'Dewayne Dedmon',
     'Juancho Hernangomez': 'Juan Hernangomez',
     'Derrick Jones Jr.': 'Derrick Jones, Jr.',
-    'K. Caldwell-Pope': 'Kentavious Caldwell-Pope',
-    'M. Kidd-Gilchrist': 'Michael Kidd-Gilchrist',
-    'A. Varejao': 'Anderson Varejao',
-    'M. Gbinije': 'Michael Gbinije',
-    'M. Plumlee': 'Mason Plumlee',
+    'Larry Nance': 'Larry Nance Jr.',
+    'Derrick Jones': 'Derrick Jones, Jr.',
     'John Lucas': 'John Lucas III',
-    'A. Harrison': 'Aaron Harrison',  # questionable
-    'H. Ellenson': 'Henry Ellenson',
-    'D. Ochefu': 'Daniel Ochefu',
+    'James McAdoo': 'James Michael McAdoo',
 }

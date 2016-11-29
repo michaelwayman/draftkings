@@ -32,13 +32,13 @@ def assign_minutes(players, game_logs):
             if player.starting:
                 if str(player.name) in STARTERS_DONT_ADJUST_PLAYTIME:
                     continue
-                if avg_mins < 20:
+                if avg_mins < 15:
                     player.expected_minutes = 25
                     print('"{}" is starting. He averages {} minutes of playtime, setting to 25 mins.'.format(player.name, avg_mins))
-            else:
-                if avg_mins > 25:
-                    player.expected_minutes = 20
-                    print('"{}" is not starting. He averages {} minutes of playtime, settings to 20 mins.'.format(player.name, avg_mins))
+        #     else:
+        #         if avg_mins > 25:
+        #             player.expected_minutes = 20
+        #             print('"{}" is not starting. He averages {} minutes of playtime, settings to 20 mins.'.format(player.name, avg_mins))
 
 
 def assign_points(players, game_logs):
@@ -57,14 +57,16 @@ def extra_filters(players, game_logs):
 
         if hasattr(player, 'starting'):
             if player.starting is False:
-                if avg_mins < 10:
+                if avg_mins < 14:
                     players_to_remove.add(player)
 
-        if avg_ppm < 0.8:
+        if avg_ppm < 0.7:
             players_to_remove.add(player)
 
+    print('\nRemoving players for low expected yield:')
+    print(sorted([p.name for p in players_to_remove]))
+    print('')
     for player in players_to_remove:
-        print('Removing "{}" for low expected yield'.format(str(player.name)))
         players.remove(player)
 
 
@@ -102,6 +104,13 @@ class Command(BaseCommand):
                 for p in players:
                     p.starting = p.name in starting_players
 
+            print('\nInjured Players:')
+            print(sorted(list(injured_players)))
+            print('')
+            print('\nStarters:')
+            print(sorted(list(starting_players)))
+            print('')
+
             game_logs = GameLog.objects.filter(
                 game__season=Season.objects.get(name='16'),
                 game__date__lt=date)
@@ -111,7 +120,7 @@ class Command(BaseCommand):
 
             extra_filters(players, game_logs)
 
-            players = filter(lambda x: x.gamelog_set.filter(game__date=date).count() > 0, players)
+            # players = filter(lambda x: x.gamelog_set.filter(game__date=date).count() > 0, players)
 
             # Map players to position
             positioned_players = map_players_to_positions(players)
@@ -120,12 +129,13 @@ class Command(BaseCommand):
             possible_lineups = 1
             for p in positioned_players.values():
                 possible_lineups *= len(p)
-            print('about {} possible lineup combinations.'.format(possible_lineups))
+            print('Generating lineups, about {} possible combinations.'.format(
+                possible_lineups if possible_lineups > 1 else 0))
 
-            # Generate the lineups
+            # Generate the lineups and print them
             evolve = Evolve(positioned_players)
             evolve.date = date
-            evolve.run(50000, n_best=50)
+            evolve.run(50000, n_best=10)
             print(evolve)
 
             # Calculate and print the effectiveness of the generated lineups
@@ -134,7 +144,7 @@ class Command(BaseCommand):
                 PRange(250, 270),
                 PRange(270, 300),
                 PRange(300)])
-            print('Results of {} lineups, with the top lineup at {}pts.'.format(
+            print('Results of top {} lineups with the best at {}pts.'.format(
                 len(evolve.best),
                 max(_.actual for _ in evolve.best)))
             prmanager.calc_prange_probability(evolve.best, key=lambda k: k.actual)
@@ -148,4 +158,9 @@ class Command(BaseCommand):
 
 INJURED_PLAYERS = set([])
 STARTING_PLAYERS = set([])
-STARTERS_DONT_ADJUST_PLAYTIME = set(['Zaza Pachulia'])
+STARTERS_DONT_ADJUST_PLAYTIME = set(['Zaza Pachulia', 'Omer Asik', 'John Henson'])
+# 'Greg Monroe', 'Monta Ellis', 'Jose Calderon', 'Jonathan Gibson', 'Kosta Koufos', 'Harrison Barnes',
+
+# ['Kosta Koufos', 'Jonathan Gibson', 'Thabo Sefolosha', 'Langston Galloway', 'E\'Twaun Moore',
+#                        'Tim Hardaway Jr.', 'Marreese Speights', 'Patrick Beverley', 'Meyers Leonard', 'JJ Redick', 'Terrence Jones',
+#                        'Tim Frazier', 'Paul Millsap', 'Blake Griffin', 'Chris Paul', 'Jabari Parker']
