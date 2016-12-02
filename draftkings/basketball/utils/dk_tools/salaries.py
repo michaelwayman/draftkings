@@ -83,7 +83,11 @@ class SalaryFile(object):
         player_salaries = self.player_salaries()
         players = Player.objects.filter(name__in=[ps.name for ps in player_salaries])
         for ps in player_salaries:
-            p = players.get(name=ps.name)
+            try:
+                p = players.get(name=ps.name)
+            except Exception as ex:
+                print(ps.name)
+                raise ex
             p.salary = ps.salary
             p.position = ps.position
             p.opponent = ps.opponent

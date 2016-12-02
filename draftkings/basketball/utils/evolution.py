@@ -63,6 +63,14 @@ class Evolvable(object):
         """
         raise NotImplemented
 
+    @abstractmethod
+    def unique(self):
+        """
+        Returns:
+            some hashable that can uniquely identify the particular sequence of genes (to avoid creating duplicates)
+        """
+        raise NotImplemented
+
 
 class EvolvableLineup(Evolvable):
     """:class:`~basketball.utils.evolution.Evolvable` that is suited for a draftkings basketball lineup."""
@@ -82,6 +90,14 @@ class EvolvableLineup(Evolvable):
                 [player.salary for player in self.genes.values() if player])
         return self._cache['cost']
 
+    @property
+    def unique_str(self):
+        if not self.cache_properties:
+            players = self.genes.values()
+            players.sort(key=lambda k: str(k.name))
+            self._cache['unique_str'] = ''.join(str(p.name) for p in players)
+        return self._cache['unique_str']
+
     def can_survive(self):
         """Our lineups cannot survive if they cost more than 50,000"""
         return self.cost <= 50000
@@ -89,6 +105,9 @@ class EvolvableLineup(Evolvable):
     def fitness_level(self):
         """The more draftking points the better the lineup"""
         return self.expected_points
+
+    def unique(self):
+        return self.unique_str
 
 
 class Evolve(object):
@@ -135,16 +154,22 @@ class Evolve(object):
         for i in xrange(n):
             parents = self.best_parents()
             self.population = [self.cross_over(parents) for _ in range(n_children)]
-            bar.update(i + 1)
-
             self.set_best(n_best=n_best)
+            bar.update(i + 1)
 
     def set_best(self, n_best=5):
         """
         Updates the "best of all time" list using the current population.
         """
+        unique = set()
+        values = self.best + self.population
+        best = []
+        for v in values:
+            if v.unique() not in unique:
+                unique.add(v.unique())
+                best.append(v)
         self.best = sorted(
-            self.best + self.population,
+            best,
             key=lambda k: k.fitness_level(), reverse=True)[:n_best]
 
     def best_parents(self, n=2):

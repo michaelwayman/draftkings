@@ -14,6 +14,7 @@ TEAM_MAP = {
     'NO': 'NOP',
     'PHO': 'PHX',
     'SA': 'SAS',
+    'GS': 'GSW',
 }
 
 
@@ -21,7 +22,7 @@ TEAM_MAP = {
 PLAYER_MAP = {
     'C.J. McCollum': 'CJ McCollum',
     'J.J. Redick': 'JJ Redick',
-    'J.J. Barea': 'Jose Juan Barea',
+    # 'J.J. Barea': 'Jose Juan Barea',
     'C.J. Watson': 'CJ Watson',
     'T.J. McConnell': 'TJ McConnell',
     'Louis Amundson': 'Lou Amundson',
@@ -38,23 +39,19 @@ PLAYER_MAP = {
     'Glenn Robinson III': 'Glenn Robinson',
     'Jakarr Sampson': 'JaKarr Sampson',
     'Nene Hilario': 'Nene',
-    'Timothe Luwawu-Cabarrot': 'Timothe Luwawu',
+    # 'Timothe Luwawu-Cabarrot': 'Timothe Luwawu',
     'Wade Baldwin IV': 'Wade Baldwin',
     'A.J. Hammons': 'AJ Hammons',
     'Guillermo Hernangomez': 'Willy Hernangomez',
     'Stephen Zimmerman Jr.': 'Stephen Zimmerman',
-    'DeAndre\' Bembry': 'DeAndre Bembry',
+    # 'DeAndre\' Bembry': 'DeAndre Bembry',
     'J.R. Smith': 'JR Smith',
     'DeWayne Dedmon': 'Dewayne Dedmon',
     'Juancho Hernangomez': 'Juan Hernangomez',
     'Derrick Jones Jr.': 'Derrick Jones, Jr.',
-    'K. Caldwell-Pope': 'Kentavious Caldwell-Pope',
-    'M. Kidd-Gilchrist': 'Michael Kidd-Gilchrist',
-    'A. Varejao': 'Anderson Varejao',
-    'M. Gbinije': 'Michael Gbinije',
-    'M. Plumlee': 'Mason Plumlee',
+    'Larry Nance': 'Larry Nance Jr.',
+    'Derrick Jones': 'Derrick Jones, Jr.',
     'John Lucas': 'John Lucas III',
-    'A. Harrison': 'Aaron Harrison',  # questionable
-    'H. Ellenson': 'Henry Ellenson',
-    'D. Ochefu': 'Daniel Ochefu',
+    'James McAdoo': 'James Michael McAdoo',
+    'DeAndre Bembry': 'DeAndre\' Bembry',
 }
