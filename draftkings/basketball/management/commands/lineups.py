@@ -3,7 +3,8 @@ import logging as log
 from django.core.management.base import BaseCommand
 from texttable import Texttable
 
-from basketball.models import Season, GameLog
+from basketball.constants import TEAM_MAP
+from basketball.models import Season, GameLog, Game, Team
 from basketball.utils.dk_tools.salaries import SalaryFileManager
 from basketball.utils.evolution import Evolve
 from basketball.utils.roto.starters import StartersFileManager
@@ -28,16 +29,16 @@ def assign_minutes(players, game_logs):
         avg_mins = player.average_minutes(game_logs=game_logs)
         player.expected_minutes = avg_mins
 
-        if hasattr(player, 'starting'):
-            if player.starting:
-                if str(player.name) in STARTERS_DONT_ADJUST_PLAYTIME:
-                    continue
-                if avg_mins < 15:
-                    player.expected_minutes = 25
-                    print('"{}" is starting. He averages {} minutes of playtime, setting to 25 mins.'.format(player.name, avg_mins))
+        # if hasattr(player, 'starting'):
+        #     if player.starting:
+        #         if str(player.name) in STARTERS_DONT_ADJUST_PLAYTIME:
+        #             continue
+        #         if avg_mins < 15:
+        #             player.expected_minutes += 10
+        #             print('"{}" is starting. He averages {} minutes of playtime, setting to 25 mins.'.format(player.name, avg_mins))
         #     else:
         #         if avg_mins > 25:
-        #             player.expected_minutes = 20
+        #             player.expected_minutes -= 7
         #             print('"{}" is not starting. He averages {} minutes of playtime, settings to 20 mins.'.format(player.name, avg_mins))
 
 
@@ -46,6 +47,63 @@ def assign_points(players, game_logs):
     for player in players:
         avg_ppm = player.average_ppm(game_logs=game_logs)
         player.expected_points = avg_ppm * player.expected_minutes
+
+
+def adjust_points(players):
+    myd = {}
+
+    games = Game.objects.filter(season=Season.objects.get(name='16'))
+
+    for game in games:
+        gls_home = GameLog.objects.filter(game=game, team=game.home_team)
+        gls_away = GameLog.objects.filter(game=game, team=game.away_team)
+
+        home = str(game.home_team)
+        away = str(game.away_team)
+
+        pts_home = sum(_.draft_king_points for _ in gls_home)
+        pts_away = sum(_.draft_king_points for _ in gls_away)
+
+        if home in myd:
+            myd[home]['scored'].append(pts_home)
+            myd[home]['lost'].append(pts_away)
+        else:
+            myd[home] = {
+                'scored': [pts_home],
+                'lost': [pts_away]
+            }
+
+        if away in myd:
+            myd[away]['scored'].append(pts_away)
+            myd[away]['lost'].append(pts_home)
+        else:
+            myd[home] = {
+                'scored': [pts_away],
+                'lost': [pts_home]
+            }
+    avg = 0
+    for k, v in myd.items():
+        scored = sum(myd[k]['scored']) / len(myd[k]['scored'])
+        lost = sum(myd[k]['lost']) / len(myd[k]['lost'])
+        myd[k]['bro'] = lost
+        avg += lost
+
+    avg /= float(len(myd))
+
+    for player in players:
+        try:
+            player.opponent = Team.objects.get(abbreviation=TEAM_MAP.get(player.opponent, player.opponent)).name
+        except:
+            pass
+
+    for player in players:
+        # print(avg - myd[player.opponent]['bro'])
+        if avg - myd[player.opponent]['bro'] > 1:
+            player.expected_points *= 0.9
+        elif avg - myd[player.opponent]['bro'] < -1:
+            player.expected_points *= 1.1
+
+    # print(myd)
 
 
 def extra_filters(players, game_logs):
@@ -60,7 +118,7 @@ def extra_filters(players, game_logs):
                 if avg_mins < 14:
                     players_to_remove.add(player)
 
-        if avg_ppm < 0.7:
+        if avg_ppm < 0.72:
             players_to_remove.add(player)
 
     print('\nRemoving players for low expected yield:')
@@ -120,7 +178,9 @@ class Command(BaseCommand):
 
             extra_filters(players, game_logs)
 
-            # players = filter(lambda x: x.gamelog_set.filter(game__date=date).count() > 0, players)
+            adjust_points(players)
+
+            players = filter(lambda x: x.gamelog_set.filter(game__date=date).count() > 0, players)
 
             # Map players to position
             positioned_players = map_players_to_positions(players)
@@ -135,7 +195,7 @@ class Command(BaseCommand):
             # Generate the lineups and print them
             evolve = Evolve(positioned_players)
             evolve.date = date
-            evolve.run(50000, n_best=10)
+            evolve.run(10000, n_best=50)
             print(evolve)
 
             # Calculate and print the effectiveness of the generated lineups
@@ -156,11 +216,6 @@ class Command(BaseCommand):
             print(results_table.draw())
 
 
-INJURED_PLAYERS = set([])
+INJURED_PLAYERS = set()
 STARTING_PLAYERS = set([])
-STARTERS_DONT_ADJUST_PLAYTIME = set(['Zaza Pachulia', 'Omer Asik', 'John Henson'])
-# 'Greg Monroe', 'Monta Ellis', 'Jose Calderon', 'Jonathan Gibson', 'Kosta Koufos', 'Harrison Barnes',
-
-# ['Kosta Koufos', 'Jonathan Gibson', 'Thabo Sefolosha', 'Langston Galloway', 'E\'Twaun Moore',
-#                        'Tim Hardaway Jr.', 'Marreese Speights', 'Patrick Beverley', 'Meyers Leonard', 'JJ Redick', 'Terrence Jones',
-#                        'Tim Frazier', 'Paul Millsap', 'Blake Griffin', 'Chris Paul', 'Jabari Parker']
+STARTERS_DONT_ADJUST_PLAYTIME = set([])

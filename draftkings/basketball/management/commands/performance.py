@@ -56,7 +56,8 @@ class Command(BaseCommand):
                 gl = player.gamelog_set.get(game__date=date)
                 avg_pts = player.average_points(game_logs=game_logs)
                 avg_mins = player.average_minutes(game_logs=game_logs)
-                diff = gl.draft_king_points - avg_pts
+                avg_ppm = player.average_ppm(game_logs=game_logs)
+                diff = gl.draft_king_points - avg_ppm * gl.minutes
                 results.append(
                     (' '.join((player.name, str(player.salary))), ', '.join(player.position), gl.team.name, str(gl.game), avg_mins, gl.minutes, avg_pts, gl.draft_king_points, str(player.starting), diff))
 
