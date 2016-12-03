@@ -216,6 +216,6 @@ class Command(BaseCommand):
             print(results_table.draw())
 
 
-INJURED_PLAYERS = set()
+INJURED_PLAYERS = set(['Paul Millsap'])
 STARTING_PLAYERS = set([])
 STARTERS_DONT_ADJUST_PLAYTIME = set([])
