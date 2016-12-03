@@ -29,17 +29,17 @@ def assign_minutes(players, game_logs):
         avg_mins = player.average_minutes(game_logs=game_logs)
         player.expected_minutes = avg_mins
 
-        # if hasattr(player, 'starting'):
-        #     if player.starting:
-        #         if str(player.name) in STARTERS_DONT_ADJUST_PLAYTIME:
-        #             continue
-        #         if avg_mins < 15:
-        #             player.expected_minutes += 10
-        #             print('"{}" is starting. He averages {} minutes of playtime, setting to 25 mins.'.format(player.name, avg_mins))
-        #     else:
-        #         if avg_mins > 25:
-        #             player.expected_minutes -= 7
-        #             print('"{}" is not starting. He averages {} minutes of playtime, settings to 20 mins.'.format(player.name, avg_mins))
+        if hasattr(player, 'starting'):
+            if player.starting:
+                if str(player.name) in STARTERS_DONT_ADJUST_PLAYTIME:
+                    continue
+                if avg_mins < 15:
+                    player.expected_minutes += 10
+                    print('"{}" is starting. He averages {} minutes of playtime, setting to 25 mins.'.format(player.name, avg_mins))
+            else:
+                if avg_mins > 25:
+                    player.expected_minutes -= 7
+                    print('"{}" is not starting. He averages {} minutes of playtime, settings to 20 mins.'.format(player.name, avg_mins))
 
 
 def assign_points(players, game_logs):
@@ -128,6 +128,12 @@ def extra_filters(players, game_logs):
         players.remove(player)
 
 
+def assign_actual_points(players, date):
+    for player in players:
+        gl = player.gamelog_set.get(game__date=date)
+        player.expected_points = gl.draft_king_points
+
+
 class Command(BaseCommand):
 
     help = ''
@@ -181,6 +187,7 @@ class Command(BaseCommand):
             adjust_points(players)
 
             players = filter(lambda x: x.gamelog_set.filter(game__date=date).count() > 0, players)
+            # assign_actual_points(players, date)
 
             # Map players to position
             positioned_players = map_players_to_positions(players)
@@ -216,6 +223,6 @@ class Command(BaseCommand):
             print(results_table.draw())
 
 
-INJURED_PLAYERS = set(['Paul Millsap'])
+INJURED_PLAYERS = set([])
 STARTING_PLAYERS = set([])
 STARTERS_DONT_ADJUST_PLAYTIME = set([])
