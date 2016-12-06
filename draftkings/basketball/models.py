@@ -335,7 +335,7 @@ class GameLog(models.Model):
 
     @property
     def points_per_min(self):
-        return round(self.draft_king_points / float(self.minutes), 2) if self.minutes > 0 else 0
+        return self.draft_king_points / float(self.minutes) if self.minutes > 0 else 0
 
     @property
     def draft_king_points(self):

@@ -27,6 +27,55 @@ class PlayerSalary(object):
         self.opponent = opponent
 
 
+class PlayerID(object):
+    def __init__(self, name=None, dk_id=None):
+        self.name = name
+        self.dk_id = dk_id
+
+
+class IDFile(object):
+    def __init__(self, file_name):
+        """
+        Args:
+            file_name: name of the file (e.g. `03-26-2016.csv`)
+        """
+        assert re.match('(\d{2}-\d{2}-\d{4}-ids\.csv)', file_name) is not None
+        self.file_name = file_name
+
+    def _full_path(self):
+        """
+        Returns:
+            Full path to the file *relative* to this folder lol"""
+        return os.path.join(SALARIES_FOLDER, self.file_name)
+
+    def player_ids(self):
+        file_obj = open(self._full_path())
+        for _ in xrange(7):
+            file_obj.next()
+        all_player_ids = []
+        reader = csv.DictReader(file_obj, dialect=SalaryFileDialect)
+        for row in reader:
+            all_player_ids.append(
+                PlayerID(
+                    name=PLAYER_MAP.get(row['Name'], row['Name']),
+                    dk_id=row['ID']))
+
+        file_obj.close()
+        return all_player_ids
+
+    def date(self):
+        """
+        Returns:
+            a date object from the CSV file's name"""
+        return datetime.strptime(self.file_name, '%m-%d-%Y-ids.csv')
+
+    def apply_dk_ids(self, players):
+        player_ids = self.player_ids()
+        for player in players:
+            player_id = filter(lambda x: x.name == player.name, player_ids)[0]
+            player.dk_id = player_id.dk_id
+
+
 class SalaryFile(object):
     """Class that represents a draftking salary file.
 
@@ -121,6 +170,8 @@ class SalaryFile(object):
 
             all_players.append(player)
 
+        file_obj.close()
+
         return all_players
 
     def __str__(self):
@@ -140,6 +191,28 @@ class SalaryFileManager(object):
             os.listdir(SALARIES_FOLDER))
         file_names.sort()
         return [SalaryFile(name) for name in file_names]
+
+    @classmethod
+    def id_files(cls):
+        """
+        Returns:
+             a list of the available `SalaryFile`s
+        """
+        file_names = filter(
+            lambda k: re.match('(\d{2}-\d{2}-\d{4}-ids\.csv)', k),
+            os.listdir(SALARIES_FOLDER))
+        file_names.sort()
+        return [IDFile(name) for name in file_names]
+
+    @classmethod
+    def id_file_for_date(cls, date):
+        salary_file = filter(
+            lambda k: k.date() == date,
+            cls.id_files())
+
+        if salary_file:
+            return salary_file[0]
+        return None
 
 
 class SalaryFileDialect(csv.Dialect):
