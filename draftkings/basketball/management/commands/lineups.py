@@ -1,4 +1,5 @@
 import logging as log
+from collections import Counter
 
 from django.core.management.base import BaseCommand
 from texttable import Texttable
@@ -37,7 +38,7 @@ def assign_minutes(players, game_logs):
                     player.expected_minutes += 10
                     print('"{}" is starting. He averages {} minutes of playtime, setting to 25 mins.'.format(player.name, avg_mins))
             else:
-                if avg_mins > 25:
+                if avg_mins > 27:
                     player.expected_minutes -= 7
                     print('"{}" is not starting. He averages {} minutes of playtime, settings to 20 mins.'.format(player.name, avg_mins))
 
@@ -103,6 +104,23 @@ def adjust_points(players):
         elif avg - myd[player.opponent]['bro'] < -1:
             player.expected_points *= 1.1
 
+        if player.name == 'Nik Stauskas':
+            player.expected_points = 24.3
+        # elif player.name == 'Chris Paul':
+        #     player.expected_points = 46.0
+        # elif player.name == 'Blake Griffin':
+        #     player.expected_points = 44.0
+        elif player.name == 'Russell Westbrook':
+            player.expected_points += 9
+        elif player.name == 'James Harden':
+            player.expected_points += 4
+        elif player.name == 'Avery Bradley':
+            player.expected_points = 35
+        # elif player.name == 'Steven Adams':
+        #     player.expected_points = 24.0
+        # elif player.name == 'Rudy Gay':
+        #     player.expected_points = 33.0
+
     # print(myd)
 
 
@@ -113,12 +131,15 @@ def extra_filters(players, game_logs):
         avg_mins = player.average_minutes(game_logs=game_logs)
         avg_ppm = player.average_ppm(game_logs=game_logs)
 
+        # if player.salary == 3000:
+        #     players_to_remove.add(player)
+
         if hasattr(player, 'starting'):
             if player.starting is False:
                 if avg_mins < 14:
                     players_to_remove.add(player)
 
-        if avg_ppm < 0.72:
+        if avg_ppm < 0.7 and player.name != 'Nik Stauskas':
             players_to_remove.add(player)
 
     print('\nRemoving players for low expected yield:')
@@ -145,6 +166,11 @@ class Command(BaseCommand):
             action='store',
             type=int,
             help='Generate lineups using the specified salary file.')
+        parser.add_argument(
+            '--make-csv',
+            action='store',
+            type=str,
+            help='')
 
     def handle(self, *args, **options):
 
@@ -186,7 +212,7 @@ class Command(BaseCommand):
 
             adjust_points(players)
 
-            players = filter(lambda x: x.gamelog_set.filter(game__date=date).count() > 0, players)
+            # players = filter(lambda x: x.gamelog_set.filter(game__date=date).count() > 0, players)
             # assign_actual_points(players, date)
 
             # Map players to position
@@ -202,8 +228,26 @@ class Command(BaseCommand):
             # Generate the lineups and print them
             evolve = Evolve(positioned_players)
             evolve.date = date
-            evolve.run(10000, n_best=50)
+            evolve.run(20000, n_best=50)
             print(evolve)
+
+            if options.get('make_csv'):
+                id_file = SalaryFileManager.id_file_for_date(date)
+                id_file.apply_dk_ids(players)
+
+                with open(options.get('make_csv'), 'w') as f:
+                    f.write('PG,SG,SF,PF,C,G,F,UTIL\n')
+                    for lineup in evolve.best:
+                        out = [
+                            lineup.genes['pg'].dk_id,
+                            lineup.genes['sg'].dk_id,
+                            lineup.genes['sf'].dk_id,
+                            lineup.genes['pf'].dk_id,
+                            lineup.genes['c'].dk_id,
+                            lineup.genes['g'].dk_id,
+                            lineup.genes['f'].dk_id,
+                            lineup.genes['util'].dk_id]
+                        f.write(','.join(out) + '\n')
 
             # Calculate and print the effectiveness of the generated lineups
             prmanager = PRManager([
@@ -222,7 +266,15 @@ class Command(BaseCommand):
                 results_table.add_row(['{} {}'.format(rg.d1, rg.d2 or '+'), int(rg.probability * 100)])
             print(results_table.draw())
 
+            p_dict = Counter()
+            for lineup in evolve.best:
+                for player in lineup.genes.values():
+                    p_dict[player] += 1
 
-INJURED_PLAYERS = set([])
+            print(p_dict)
+
+
+INJURED_PLAYERS = set(['DeMar DeRozan'])
 STARTING_PLAYERS = set([])
 STARTERS_DONT_ADJUST_PLAYTIME = set([])
+# 'Ricky Rubio', 'Justin Anderson', 'Timofey Mozgov', 'Hassan Whiteside', 'Mason Plumlee', 'Nemanja Bjelica', 'Tyus Jones', 'Tyson Chandler', 'Jared Dudley', 'Alex Len', 'Derrick Williams'
