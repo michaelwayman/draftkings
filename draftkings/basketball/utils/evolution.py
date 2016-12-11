@@ -271,9 +271,11 @@ class Evolve(object):
 
             table = Texttable(max_width=130)
             table.set_deco(Texttable.HEADER)
-            table.add_row(['Position', 'Name', 'Cost', 'Predicted', 'Actual', 'Mins', 'Avg Mins', 'PPM', 'AVG PPM'])
+            table.add_row(['Position', 'Starting', 'Name', 'Cost', 'Predicted', 'Actual', 'Mins', 'Avg Mins', 'PPM', 'AVG PPM'])
 
             for position, player in lineup.genes.items():
+                if not hasattr(player, 'starting'):
+                    player.starting = ''
                 try:
                     game_log = player.gamelog_set.get(game__date=self.date)
                 except:
@@ -283,7 +285,7 @@ class Evolve(object):
                     game_log.points_per_min = 0
                 game_logs = player.game_logs_last_x_days(90)
                 table.add_row([
-                    position, player.name, player.salary,
+                    position, str(player.starting), player.name, player.salary,
                     player.expected_points, game_log.draft_king_points, game_log.minutes,
                     player.average_minutes(game_logs=game_logs), game_log.points_per_min, player.average_ppm(game_logs=game_logs)
                 ])
@@ -293,7 +295,7 @@ class Evolve(object):
 
             lineup.actual = lineup_actual_score
             table.add_row([
-                'TOTAL', '', lineup.cost,
+                'TOTAL', '', '', lineup.cost,
                 lineup.expected_points, lineup_actual_score, lineup_actual_mins,
                 lineup_avg_mins, '', ''
             ])
