@@ -100,26 +100,9 @@ def adjust_points(players):
     for player in players:
         # print(avg - myd[player.opponent]['bro'])
         if avg - myd[player.opponent]['bro'] > 1:
-            player.expected_points *= 0.9
+            player.expected_points *= 0.8
         elif avg - myd[player.opponent]['bro'] < -1:
-            player.expected_points *= 1.1
-
-        if player.name == 'Nik Stauskas':
-            player.expected_points = 24.3
-        # elif player.name == 'Chris Paul':
-        #     player.expected_points = 46.0
-        # elif player.name == 'Blake Griffin':
-        #     player.expected_points = 44.0
-        elif player.name == 'Russell Westbrook':
-            player.expected_points += 9
-        elif player.name == 'James Harden':
-            player.expected_points += 4
-        elif player.name == 'Avery Bradley':
-            player.expected_points = 35
-        # elif player.name == 'Steven Adams':
-        #     player.expected_points = 24.0
-        # elif player.name == 'Rudy Gay':
-        #     player.expected_points = 33.0
+            player.expected_points *= 1.2
 
     # print(myd)
 
@@ -131,15 +114,15 @@ def extra_filters(players, game_logs):
         avg_mins = player.average_minutes(game_logs=game_logs)
         avg_ppm = player.average_ppm(game_logs=game_logs)
 
-        # if player.salary == 3000:
-        #     players_to_remove.add(player)
+        if player.salary < 3600:
+            players_to_remove.add(player)
 
         if hasattr(player, 'starting'):
             if player.starting is False:
                 if avg_mins < 14:
                     players_to_remove.add(player)
 
-        if avg_ppm < 0.7 and player.name != 'Nik Stauskas':
+        if avg_ppm < 0.6:
             players_to_remove.add(player)
 
     print('\nRemoving players for low expected yield:')
@@ -210,7 +193,7 @@ class Command(BaseCommand):
 
             extra_filters(players, game_logs)
 
-            adjust_points(players)
+            # adjust_points(players)
 
             # players = filter(lambda x: x.gamelog_set.filter(game__date=date).count() > 0, players)
             # assign_actual_points(players, date)
@@ -228,7 +211,7 @@ class Command(BaseCommand):
             # Generate the lineups and print them
             evolve = Evolve(positioned_players)
             evolve.date = date
-            evolve.run(20000, n_best=50)
+            evolve.run(70000, n_best=5)
             print(evolve)
 
             if options.get('make_csv'):
@@ -274,7 +257,6 @@ class Command(BaseCommand):
             print(p_dict)
 
 
-INJURED_PLAYERS = set(['DeMar DeRozan'])
+INJURED_PLAYERS = set([])
 STARTING_PLAYERS = set([])
 STARTERS_DONT_ADJUST_PLAYTIME = set([])
-# 'Ricky Rubio', 'Justin Anderson', 'Timofey Mozgov', 'Hassan Whiteside', 'Mason Plumlee', 'Nemanja Bjelica', 'Tyus Jones', 'Tyson Chandler', 'Jared Dudley', 'Alex Len', 'Derrick Williams'

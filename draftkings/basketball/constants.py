@@ -54,4 +54,5 @@ PLAYER_MAP = {
     'John Lucas': 'John Lucas III',
     'James McAdoo': 'James Michael McAdoo',
     'DeAndre Bembry': 'DeAndre\' Bembry',
+    'Tim Hardaway': 'Tim Hardaway Jr.',
 }
