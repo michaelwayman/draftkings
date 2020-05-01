@@ -1,4 +1,7 @@
-This was just a fun side-project. A lot is going on to make this work but it was sometimes successful. The missing piece is probably switching to an AI model or use more sophisticated statistics. Don't take this too seriously, it was just for me to play around with so ignore the spaghetti.
+# Project
+This project was an attempt at using computer science and historical sports data to gamble on daily fantasy sports.
+
+This was just a fun side-project. A lot is going on to make this work. It was sometimes successful but mostly would have me breaking-even. The missing piece is probably switching to an AI model or use more sophisticated statistics. Don't take this too seriously, it was just for me to play around with so ignore the spaghetti.
 
 # Documentation
 
