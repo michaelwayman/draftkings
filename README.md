@@ -1,3 +1,5 @@
+This was just a fun side-project. A lot is going on to make this work but it was sometimes successful. The missing piece is probably switching to an AI model or use more sophisticated statistics. Don't take this too seriously, it was just for me to play around with so ignore the spaghetti.
+
 # Documentation
 
 Sphinx auto generated docs with "read-the-docs" theme.
